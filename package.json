@@ -1,0 +1,70 @@
+{
+  "name": "personal-finance",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Personal Finance Desktop Application",
+  "main": "backend/dist-electron/main.js",
+  "author": "Antigravity",
+  "scripts": {
+    "dev": "concurrently -k \"npm run dev:vite\" \"wait-on tcp:5173 && npm run dev:electron\"",
+    "dev:vite": "vite",
+    "dev:electron": "tsc -p tsconfig.electron.json && electron .",
+    "build": "npm run build:vite && npm run build:electron",
+    "build:vite": "tsc && vite build",
+    "build:electron": "tsc -p tsconfig.electron.json",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "dist": "npm run build && electron-builder"
+  },
+  "build": {
+    "appId": "com.personalfinance.desktop",
+    "productName": "Personal Finance",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "backend/dist-electron/**/*",
+      "build/icon.ico",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "lucide-react": "^1.16.0",
+    "mysql2": "^3.24.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.3.0",
+    "recharts": "^2.15.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@types/node": "^22.13.9",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^35.0.0",
+    "electron-builder": "^25.1.8",
+    "eslint": "^9.21.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.25.0",
+    "wait-on": "^8.0.2"
+  }
+}
