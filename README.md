@@ -1,130 +1,132 @@
 # Personal Finance
 
-Ứng dụng desktop quản lý tài chính cá nhân, xây dựng bằng Electron, React, TypeScript và Vite. MySQL được dùng để lưu dữ liệu.
+Ứng dụng desktop quản lý tài chính cá nhân, xây dựng bằng Electron, React, TypeScript, Vite và SQLite. Phiên bản hiện tại: **2.0.0**.
 
-## Cài môi trường (Windows)
+Ứng dụng lưu dữ liệu cục bộ trên máy Windows. Không cần cài hoặc chạy MySQL Server; database của mỗi tài khoản Windows là riêng.
 
-### 1. Cài Git
+## Cài đặt ứng dụng trên Windows
 
-Tải và cài Git for Windows từ [git-scm.com/download/win](https://git-scm.com/download/win). Có thể giữ các lựa chọn mặc định trong trình cài đặt.
+1. Nhận file cài đặt `Personal Finance Setup 2.0.0.exe` từ người chia sẻ dự án.
+2. Mở file cài đặt, chọn thư mục cài nếu cần rồi hoàn tất các bước hướng dẫn.
+3. Mở **Personal Finance** từ Start Menu hoặc shortcut trên Desktop.
+4. Ở lần chạy đầu, ứng dụng tự tạo database SQLite và các danh mục mặc định.
 
-Nếu đã tải mã nguồn dự án dưới dạng ZIP thì có thể bỏ qua bước này.
+Ứng dụng không đóng gói dữ liệu cá nhân của người tạo bộ cài. Mỗi người dùng sẽ có database riêng trên máy của mình. Nếu Windows hiện cảnh báo ứng dụng chưa xác định nhà phát hành, đó là do bộ cài chưa được ký số; chỉ tiếp tục nếu bạn tin cậy nguồn nhận file.
 
-### 2. Cài Node.js và npm
+## Dữ liệu và quyền riêng tư
 
-1. Tải Node.js phiên bản LTS từ [nodejs.org/en/download](https://nodejs.org/en/download/). Dùng Node.js **20.19 trở lên** hoặc **22.12 trở lên** để tương thích với Vite của dự án.
-2. Chạy bộ cài đặt và giữ tùy chọn thêm Node.js vào `PATH`.
-3. Đóng rồi mở lại terminal, kiểm tra cài đặt:
+Database nằm tại:
+
+```text
+%APPDATA%\Personal Finance\personal_finance.sqlite
+```
+
+Mở thư mục này bằng PowerShell:
+
+```powershell
+Start-Process explorer.exe -ArgumentList "`"$env:APPDATA\Personal Finance`""
+```
+
+Database được lưu theo tài khoản Windows. Những người dùng chung một tài khoản Windows cũng dùng chung dữ liệu ứng dụng; muốn tách dữ liệu, hãy dùng tài khoản Windows riêng.
+
+Database cục bộ **không được mã hóa bởi ứng dụng**. Hãy bảo vệ tài khoản Windows và không gửi file `.sqlite` cho người khác nếu không muốn chia sẻ dữ liệu tài chính.
+
+## Sử dụng ứng dụng
+
+Các mục ở thanh bên:
+
+- **Dashboard:** xem số dư, thu chi trong tháng, công nợ, tiết kiệm và các giao dịch gần đây.
+- **Thu nhập / Chi tiêu:** ghi nhận khoản thu hoặc chi, chọn ví và danh mục.
+- **Lịch sử giao dịch:** xem, tìm kiếm và lọc giao dịch theo loại hoặc khoảng ngày.
+- **Công nợ:** tạo khoản phải thu/phải trả và ghi nhận các lần thanh toán.
+- **Ngân sách:** lập hạn mức theo thời gian và danh mục, theo dõi số tiền đã dùng.
+- **Tiết kiệm:** tạo mục tiêu, cập nhật số tiền tích lũy và theo dõi tiến độ.
+- **Báo cáo:** xem xu hướng và tổng hợp thu chi.
+- **Cài đặt & Sao lưu:** kiểm tra database, xuất giao dịch CSV và tạo bản sao dữ liệu JSON.
+
+### Bắt đầu
+
+1. Mở ứng dụng và vào **Thu nhập** hoặc **Chi tiêu** để ghi nhận giao dịch đầu tiên.
+2. Chọn ví, danh mục, số tiền, ngày giao dịch và ghi chú nếu cần.
+3. Tạo ngân sách, mục tiêu tiết kiệm hoặc khoản công nợ tại các trang tương ứng.
+4. Dùng **Lịch sử giao dịch** và **Báo cáo** để tra cứu, xem tổng hợp.
+
+### Sao lưu và xuất dữ liệu
+
+- Vào **Cài đặt & Sao lưu** → **Sao lưu database** để tạo file JSON chứa dữ liệu ứng dụng. Có thể nhập một thư mục sao lưu; nếu để trống, ứng dụng lưu trong thư mục Documents của Windows.
+- Vào **Cài đặt & Sao lưu** → **Xuất CSV** để lưu danh sách giao dịch thành file CSV, có thể mở bằng Excel.
+- Nên sao lưu định kỳ và giữ bản sao ở nơi an toàn. Gỡ cài đặt ứng dụng không thay thế cho việc sao lưu database.
+- Phiên bản hiện tại chưa có nút phục hồi file JSON trong giao diện. Hãy giữ lại file sao lưu; không thay thế hoặc xóa file SQLite đang dùng nếu chưa có bản sao an toàn.
+
+## Chạy dự án ở chế độ phát triển
+
+### Yêu cầu
+
+- Windows 10/11.
+- Git for Windows nếu clone dự án.
+- Node.js **20.19 trở lên** hoặc **22.12 trở lên**, kèm npm.
+- Không cần cài MySQL hoặc SQLite riêng.
+
+Kiểm tra phiên bản:
 
 ```powershell
 node --version
 npm --version
 ```
 
-### 3. Cài MySQL Server và MySQL Workbench
+### Cài và chạy
 
-1. Tải MySQL Installer từ [dev.mysql.com/downloads/installer](https://dev.mysql.com/downloads/installer/).
-2. Trong quá trình cài, chọn MySQL Server 8.0 và MySQL Workbench (Workbench dùng để tạo database và chạy file SQL).
-3. Thiết lập mật khẩu cho tài khoản `root` và giữ cổng mặc định `3306`.
-4. Đảm bảo MySQL Server đang chạy dưới dạng Windows Service.
-
-Ghi nhớ mật khẩu `root`; cần nhập mật khẩu này vào file `.env` ở bước cấu hình bên dưới.
-
-## Cài đặt và khởi chạy dự án
-
-### 1. Tải mã nguồn
-
-Nếu đã có mã nguồn trên máy, mở PowerShell tại thư mục dự án và bỏ qua phần clone. Nếu chưa, dùng Git:
+Clone dự án (nếu chưa có mã nguồn), cài dependencies và khởi động:
 
 ```powershell
 git clone https://github.com/LongPahm2005/personal-finance-app.git
 cd personal-finance-app
-```
-
-### 2. Cài các thư viện của dự án
-
-Chạy tại thư mục có file `package.json`:
-
-```bash
 npm ci
-```
-
-Lệnh này cài dependencies theo `package-lock.json`, bao gồm các thư viện frontend, Electron, TypeScript và công cụ build.
-
-### 3. Tạo cơ sở dữ liệu
-
-Mở MySQL Workbench và kết nối tới MySQL Server bằng tài khoản `root`. Tạo database `personal_finance` với charset `utf8mb4`, sau đó chọn database vừa tạo làm schema mặc định.
-
-Mở file `personal_finance.sql` ở thư mục dự án trong Workbench và chạy toàn bộ script trên database vừa tạo.
-
-Script SQL tạo các bảng cần thiết và thêm một số danh mục thu/chi mẫu. **Script có lệnh `DROP TABLE IF EXISTS`**: chỉ chạy trên database mới hoặc database không cần giữ dữ liệu, vì chạy lại có thể xóa các bảng hiện có.
-
-### 4. Cấu hình kết nối MySQL
-
-Tạo file `.env` tại thư mục gốc dự án bằng cách sao chép `.env.example`:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Mở `.env` và điền thông tin kết nối MySQL:
-
-```dotenv
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=mat_khau_mysql
-DB_NAME=personal_finance
-
-NODE_ENV=development
-```
-
-Thay `mat_khau_mysql` bằng mật khẩu `root` đã tạo khi cài MySQL. Nếu để `DB_PASSWORD` trống, ứng dụng hiện thử dùng mật khẩu mặc định `123456`.
-
-### 5. Chạy ứng dụng ở chế độ phát triển
- 
-```bash
 npm run dev
 ```
 
-Lệnh này khởi chạy Vite và Electron cùng lúc. Đóng cửa sổ ứng dụng hoặc nhấn `Ctrl+C` trong terminal để dừng.
+`npm run dev` chạy Vite và Electron. Đóng cửa sổ ứng dụng hoặc nhấn `Ctrl+C` trong terminal để dừng.
 
-## Kiểm tra và build
+Ứng dụng tự tạo database tại `%APPDATA%\Personal Finance\personal_finance.sqlite`; không cần tạo `.env`, cài database server hay chạy file SQL để khởi động bản hiện tại.
 
-Chạy ESLint:
+### Lệnh dành cho phát triển
 
-```bash
+```powershell
 npm run lint
-```
-
-Build frontend và biên dịch mã Electron:
-
-```bash
 npm run build
-```
-
-Sau khi build thành công:
-
-- Frontend được tạo trong `dist/`.
-- Mã Electron đã biên dịch được tạo trong `backend/dist-electron/`.
-
-## Tạo bộ cài Windows
-
-```bash
 npm run dist
 ```
 
-Lệnh này chạy build trước, sau đó dùng electron-builder tạo bộ cài NSIS trong `release/`. Mở file `Personal Finance Setup <version>.exe` để cài ứng dụng.
+- `npm run lint`: chạy ESLint trên toàn dự án.
+- `npm run build`: build giao diện và biên dịch mã Electron.
+- `npm run dist`: tạo bộ cài Windows trong `release/`, tên file theo version trong `package.json`.
 
-## Xử lý sự cố thường gặp
+Nếu quá trình đóng gói báo `A required privilege is not held by the client` khi giải nén `winCodeSign`, bật **Windows Developer Mode** hoặc dùng terminal có quyền phù hợp. Có thể thử tạo NSIS installer mà không sửa tài nguyên executable bằng lệnh:
 
-- **Không kết nối được MySQL:** kiểm tra MySQL Server đang chạy, `DB_HOST`/`DB_PORT`, tài khoản và mật khẩu trong `.env`, và database `personal_finance` đã được tạo cũng như import SQL.
-- **Cổng 5173 đang được sử dụng:** dừng tiến trình đang dùng cổng đó rồi chạy lại `npm run dev`; Vite được cấu hình không tự chuyển sang cổng khác.
-- **Build hoặc cài dependencies gặp lỗi:** kiểm tra phiên bản Node.js bằng `node --version`, sau đó thử cài lại theo lockfile bằng `npm ci`.
+```powershell
+npx electron-builder --win nsis --config.win.signAndEditExecutable=false
+```
 
-## Cấu trúc chính
+### Nhập snapshot SQLite cũ
+
+Chỉ dùng lệnh này khi có snapshot SQLite được xuất theo cấu trúc MySQL cũ. Công cụ chuyển đổi từ chối ghi đè database đích đã tồn tại:
+
+```powershell
+npm run migrate:legacy-sqlite -- "C:\duong-dan\personal_finance.sqlite"
+```
+
+## Xử lý sự cố
+
+- **Không thấy dữ liệu:** kiểm tra tài khoản Windows đang đăng nhập và mở đúng thư mục `%APPDATA%\Personal Finance`.
+- **Không mở/ghi được database:** kiểm tra quyền ghi vào thư mục trên và đảm bảo database không bị khóa bởi một tiến trình khác.
+- **Cổng 5173 đang được sử dụng khi chạy chế độ phát triển:** đóng tiến trình đang dùng cổng hoặc khởi động lại sau khi cổng được giải phóng.
+- **Cài dependencies hoặc build thất bại:** kiểm tra phiên bản Node.js, sau đó chạy lại `npm ci`.
+- **Cần chia sẻ dữ liệu với người khác:** dùng tính năng sao lưu và chỉ chia sẻ file JSON khi bạn thực sự muốn gửi dữ liệu trong đó. Không gửi database cá nhân kèm mã nguồn hay bộ cài.
+
+## Cấu trúc dự án
 
 - `frontend/`: giao diện React.
-- `backend/electron/`: Electron main process, preload, IPC và dịch vụ dữ liệu.
-- `backend/database/`: tài liệu cấu trúc database.
-- `personal_finance.sql`: schema và dữ liệu danh mục mẫu.
+- `backend/electron/`: Electron main process, preload, IPC, dịch vụ và database.
+- `backend/electron/database/schema.ts`: schema SQLite và dữ liệu khởi tạo.
+- `docs/database/`: schema MySQL cũ được giữ để tham khảo khi chuyển đổi dữ liệu.
+- `scripts/database/`: công cụ nhập snapshot SQLite theo schema cũ vào database ứng dụng.

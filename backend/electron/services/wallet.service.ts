@@ -1,5 +1,5 @@
-import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { getPool, withTransaction } from '../database/connection';
+import type { RowDataPacket, ResultSetHeader } from '../database/types';
 
 export const INTERNAL_WALLET_NAME = '__personal_finance_default__';
 
@@ -142,7 +142,7 @@ export class WalletService {
       [id]
     );
 
-    if (trans[0].cnt > 0 || debtPayments[0].cnt > 0) {
+    if (Number(trans[0].cnt) > 0 || Number(debtPayments[0].cnt) > 0) {
       // Cannot hard delete to preserve financial history; deactivate instead
       await pool.query('UPDATE wallets SET is_active = 0 WHERE id = ?', [id]);
       return;
@@ -153,11 +153,12 @@ export class WalletService {
 
   async getTotalBalance(): Promise<number> {
     const pool = getPool();
-    const [walletRows] = await pool.query<RowDataPacket[]>(
-      'SELECT COALESCE(SUM(current_balance), 0) AS total FROM wallets WHERE is_active = 1 AND name <> ?',
-      [INTERNAL_WALLET_NAME]
-    );
-    const [transactionRows] = await pool.query<RowDataPacket[]>(`
+    const [[walletRows], [transactionRows], [paymentRows]] = await Promise.all([
+      pool.query<RowDataPacket[]>(
+        'SELECT COALESCE(SUM(current_balance), 0) AS total FROM wallets WHERE is_active = 1 AND name <> ?',
+        [INTERNAL_WALLET_NAME]
+      ),
+      pool.query<RowDataPacket[]>(`
       SELECT COALESCE(SUM(CASE
         WHEN type = 'income' THEN amount
         WHEN type = 'expense' THEN -amount
@@ -167,13 +168,14 @@ export class WalletService {
       END), 0) AS total
       FROM transactions
       WHERE wallet_id = (SELECT id FROM wallets WHERE name = ? ORDER BY id ASC LIMIT 1)
-    `, [INTERNAL_WALLET_NAME]);
-    const [paymentRows] = await pool.query<RowDataPacket[]>(`
+      `, [INTERNAL_WALLET_NAME]),
+      pool.query<RowDataPacket[]>(`
       SELECT COALESCE(SUM(CASE WHEN d.type = 'receivable' THEN p.amount ELSE -p.amount END), 0) AS total
       FROM debt_payments p
       JOIN debts d ON d.id = p.debt_id
       WHERE p.wallet_id = (SELECT id FROM wallets WHERE name = ? ORDER BY id ASC LIMIT 1)
-    `, [INTERNAL_WALLET_NAME]);
+      `, [INTERNAL_WALLET_NAME]),
+    ]);
 
     return Number(walletRows[0]?.total || 0)
       + Number(transactionRows[0]?.total || 0)

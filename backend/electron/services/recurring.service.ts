@@ -1,6 +1,6 @@
-import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { getPool, withTransaction } from '../database/connection';
 import { INTERNAL_WALLET_NAME } from './wallet.service';
+import type { RowDataPacket, ResultSetHeader } from '../database/types';
 
 export interface RecurringModel {
   id: number;
@@ -221,7 +221,7 @@ export class RecurringService {
         }
 
         // 3. Compute and advance next_date
-        const nextDate = this.calculateNextDate(rec.next_date, rec.frequency);
+        const nextDate = this.calculateNextDate(String(rec.next_date), String(rec.frequency));
         await conn.query(
           'UPDATE recurring_transactions SET next_date = ? WHERE id = ?',
           [nextDate, rec.id]

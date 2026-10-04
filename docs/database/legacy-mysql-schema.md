@@ -1,8 +1,6 @@
-# Database Schema Documentation: `personal_finance`
+# Tài liệu schema MySQL cũ: `personal_finance`
 
-Cơ sở dữ liệu: **MySQL 8.0**  
-Tên Database: **`personal_finance`**  
-Charset/Collation: **utf8mb4 / utf8mb4_0900_ai_ci**
+Tài liệu này chỉ lưu tham khảo schema MySQL cũ dùng để chuyển dữ liệu. Ứng dụng hiện tại sử dụng SQLite; schema mới được định nghĩa tại [`backend/electron/database/schema.ts`](../../backend/electron/database/schema.ts). File SQL gốc nằm tại [`legacy-mysql-seed.sql`](./legacy-mysql-seed.sql); script đó có lệnh `DROP TABLE` và chỉ dùng trên database MySQL thử nghiệm.
 
 ---
 

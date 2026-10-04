@@ -1,6 +1,5 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
-import dotenv from 'dotenv';
 import { closePool, testConnection } from './database/connection';
 import { registerCategoryIpc } from './ipc/category.ipc';
 import { registerWalletIpc } from './ipc/wallet.ipc';
@@ -13,8 +12,7 @@ import { registerReportIpc } from './ipc/report.ipc';
 import { registerSystemIpc } from './ipc/system.ipc';
 import { RecurringService } from './services/recurring.service';
 
-// Load .env
-dotenv.config({ path: path.join(__dirname, '../.env') });
+app.setName('Personal Finance');
 
 const isDev = process.env.NODE_ENV !== 'production' && !app.isPackaged;
 
@@ -70,7 +68,7 @@ app.whenReady().then(async () => {
   // Test connection on boot
   const connTest = await testConnection();
   if (connTest.success) {
-    console.log('Database connection initialized successfully.');
+    console.log('SQLite database initialized successfully.');
     // Process due recurring transactions on startup
     try {
       const recurringService = new RecurringService();
@@ -82,7 +80,7 @@ app.whenReady().then(async () => {
       console.error('Error processing recurring transactions on startup:', e);
     }
   } else {
-    console.error('Database connection warning:', connTest.message);
+    console.error('SQLite database warning:', connTest.message);
   }
 
   registerAllIpc();

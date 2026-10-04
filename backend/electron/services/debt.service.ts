@@ -1,6 +1,6 @@
-import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { getPool, withTransaction } from '../database/connection';
 import { INTERNAL_WALLET_NAME, WalletService } from './wallet.service';
+import type { RowDataPacket, ResultSetHeader } from '../database/types';
 
 export interface DebtModel {
   id: number;
@@ -311,7 +311,7 @@ export class DebtService {
       'SELECT COUNT(*) as cnt FROM debt_payments WHERE debt_id = ?',
       [id]
     );
-    if (payments[0].cnt > 0) {
+    if (Number(payments[0].cnt) > 0) {
       throw new Error('Khoản nợ đã phát sinh lịch sử thanh toán, không thể xóa để bảo toàn lịch sử.');
     }
     await pool.query('DELETE FROM debts WHERE id = ?', [id]);

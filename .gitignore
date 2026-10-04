@@ -28,3 +28,7 @@ release
 # Environment
 .env
 .env.production
+
+# Local SQLite data must never be committed to the source repository.
+/personal_finance.sqlite
+/personal_finance.sqlite-*

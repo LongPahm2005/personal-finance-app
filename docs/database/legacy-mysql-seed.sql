@@ -1,5 +1,5 @@
 /*
- Navicat Premium Data Transfer
+ Legacy MySQL schema and sample-data export. Do not run against production data.
 
  Source Server         : localhost
  Source Server Type    : MySQL

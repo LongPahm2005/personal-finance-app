@@ -1,5 +1,5 @@
-import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { getPool } from '../database/connection';
+import type { ResultSetHeader, RowDataPacket } from '../database/types';
 
 export interface CategoryModel {
   id: number;
@@ -24,7 +24,7 @@ export class CategoryService {
     query += ' ORDER BY type ASC, name ASC';
 
     const [rows] = await pool.query<RowDataPacket[]>(query, params);
-    return rows as CategoryModel[];
+    return rows.map(row => this.toModel(row));
   }
 
   async getAll(): Promise<CategoryModel[]> {
@@ -32,7 +32,7 @@ export class CategoryService {
     const [rows] = await pool.query<RowDataPacket[]>(
       'SELECT * FROM categories ORDER BY type ASC, name ASC'
     );
-    return rows as CategoryModel[];
+    return rows.map(row => this.toModel(row));
   }
 
   async getById(id: number): Promise<CategoryModel | null> {
@@ -42,7 +42,7 @@ export class CategoryService {
       [id]
     );
     if (rows.length === 0) return null;
-    return rows[0] as CategoryModel;
+    return this.toModel(rows[0]);
   }
 
   async create(data: { name: string; type: 'income' | 'expense'; description?: string }): Promise<CategoryModel> {
@@ -101,7 +101,7 @@ export class CategoryService {
       'SELECT COUNT(*) as cnt FROM transactions WHERE category_id = ?',
       [id]
     );
-    if (trans[0].cnt > 0) {
+    if (Number(trans[0].cnt) > 0) {
       // Soft delete to protect historical data integrity
       await pool.query('UPDATE categories SET is_active = 0 WHERE id = ?', [id]);
       return;
@@ -117,11 +117,23 @@ export class CategoryService {
       [id]
     );
 
-    if (rec[0].cnt > 0 || bud[0].cnt > 0) {
+    if (Number(rec[0].cnt) > 0 || Number(bud[0].cnt) > 0) {
       await pool.query('UPDATE categories SET is_active = 0 WHERE id = ?', [id]);
       return;
     }
 
     await pool.query('DELETE FROM categories WHERE id = ?', [id]);
+  }
+
+  private toModel(row: RowDataPacket): CategoryModel {
+    return {
+      id: Number(row.id),
+      name: String(row.name),
+      type: String(row.type) as CategoryModel['type'],
+      description: row.description === null ? null : String(row.description),
+      is_active: Number(row.is_active),
+      created_at: row.created_at === null ? undefined : String(row.created_at),
+      updated_at: row.updated_at === null ? undefined : String(row.updated_at),
+    };
   }
 }

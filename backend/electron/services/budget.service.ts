@@ -1,6 +1,6 @@
-import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { getPool, withTransaction } from '../database/connection';
 import { CategoryModel } from './category.service';
+import type { RowDataPacket, ResultSetHeader } from '../database/types';
 
 export interface BudgetModel {
   id: number;
@@ -48,14 +48,14 @@ export class BudgetService {
       `, [r.id]);
 
       budgets.push({
-        id: r.id,
-        name: r.name,
+        id: Number(r.id),
+        name: String(r.name),
         amount: Number(r.amount),
-        start_date: r.start_date,
-        end_date: r.end_date,
-        description: r.description || null,
-        created_at: r.created_at,
-        updated_at: r.updated_at,
+        start_date: String(r.start_date),
+        end_date: String(r.end_date),
+        description: r.description === null ? null : String(r.description),
+        created_at: r.created_at === null ? undefined : String(r.created_at),
+        updated_at: r.updated_at === null ? undefined : String(r.updated_at),
         categories: catRows as unknown as CategoryModel[],
       });
     }
@@ -88,14 +88,14 @@ export class BudgetService {
     `, [id]);
 
     return {
-      id: r.id,
-      name: r.name,
+      id: Number(r.id),
+      name: String(r.name),
       amount: Number(r.amount),
-      start_date: r.start_date,
-      end_date: r.end_date,
-      description: r.description || null,
-      created_at: r.created_at,
-      updated_at: r.updated_at,
+      start_date: String(r.start_date),
+      end_date: String(r.end_date),
+      description: r.description === null ? null : String(r.description),
+      created_at: r.created_at === null ? undefined : String(r.created_at),
+      updated_at: r.updated_at === null ? undefined : String(r.updated_at),
       categories: catRows as unknown as CategoryModel[],
     };
   }
@@ -257,7 +257,7 @@ export class BudgetService {
 
     const results: BudgetUsageModel[] = [];
     for (const r of rows) {
-      const usage = await this.getUsage(r.id);
+      const usage = await this.getUsage(Number(r.id));
       results.push(usage);
     }
 

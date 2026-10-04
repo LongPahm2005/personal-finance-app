@@ -1,6 +1,6 @@
-import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { getPool, withTransaction } from '../database/connection';
 import { INTERNAL_WALLET_NAME, WalletService } from './wallet.service';
+import type { RowDataPacket, ResultSetHeader } from '../database/types';
 
 export interface TransactionModel {
   id: number;
@@ -84,14 +84,8 @@ export class TransactionService {
       LEFT JOIN wallets w ON t.wallet_id = w.id
       ${whereClause}
     `;
-    const [countRows] = await pool.query<RowDataPacket[]>(countSql, params);
-    const total = Number(countRows[0]?.total || 0);
-    const totalPages = Math.ceil(total / limit) || 1;
-
-    // Data query
     const sortBy = filters.sort_by || 'transaction_date';
     const sortOrder = filters.sort_order === 'ASC' ? 'ASC' : 'DESC';
-
     const dataSql = `
       SELECT 
         t.id,
@@ -114,8 +108,13 @@ export class TransactionService {
       LIMIT ? OFFSET ?
     `;
 
-    const queryParams = [...params, limit, offset];
-    const [rows] = await pool.query<RowDataPacket[]>(dataSql, queryParams);
+    // Count and page data are independent reads.
+    const [[countRows], [rows]] = await Promise.all([
+      pool.query<RowDataPacket[]>(countSql, params),
+      pool.query<RowDataPacket[]>(dataSql, [...params, limit, offset]),
+    ]);
+    const total = Number(countRows[0]?.total || 0);
+    const totalPages = Math.ceil(total / limit) || 1;
 
     const items = rows.map(r => ({
       ...r,
@@ -478,7 +477,7 @@ export class TransactionService {
 
         // Find which is outflow and which is inflow
         // Outflow has note "Chuyển đến", inflow has note "Nhận từ" (or check IDs)
-        const isOutflow = tx.note?.startsWith('Chuyển đến') || tx.id < tx.transfer_id;
+        const isOutflow = String(tx.note || '').startsWith('Chuyển đến') || Number(tx.id) < Number(tx.transfer_id);
         const outflowWalletId = isOutflow ? tx.wallet_id : pairedRows[0]?.wallet_id;
         const inflowWalletId = isOutflow ? pairedRows[0]?.wallet_id : tx.wallet_id;
 

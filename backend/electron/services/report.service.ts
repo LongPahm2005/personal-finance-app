@@ -1,9 +1,9 @@
-import { RowDataPacket } from 'mysql2/promise';
 import { getPool } from '../database/connection';
 import { TransactionModel } from './transaction.service';
 import { DebtModel } from './debt.service';
 import { BudgetUsageModel, BudgetService } from './budget.service';
 import { WalletService } from './wallet.service';
+import type { RowDataPacket } from '../database/types';
 
 export interface DashboardData {
   totalBalance: number;
@@ -45,39 +45,33 @@ export class ReportService {
     const lastDay = new Date(currentYear, currentMonth, 0).getDate();
     const endOfMonth = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(lastDay).padStart(2, '0')} 23:59:59`;
 
-    // 1. Total balance from visible legacy accounts and the internal transaction ledger
-    const totalBalance = await new WalletService().getTotalBalance();
-
-    // 2. Monthly Income & Expense
-    const [mRows] = await pool.query<RowDataPacket[]>(`
+    const [
+      totalBalance,
+      [mRows],
+      [dRows],
+      [sRows],
+      [txRows],
+      [dueRows],
+      activeBudgets,
+    ] = await Promise.all([
+      new WalletService().getTotalBalance(),
+      pool.query<RowDataPacket[]>(`
       SELECT 
         SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as inc,
         SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) as exp
       FROM transactions
       WHERE transaction_date >= ? AND transaction_date <= ?
-    `, [startOfMonth, endOfMonth]);
-    const monthlyIncome = Number(mRows[0]?.inc || 0);
-    const monthlyExpense = Number(mRows[0]?.exp || 0);
-    const netCashFlow = monthlyIncome - monthlyExpense;
-
-    // 3. Debts (Receivable & Payable)
-    const [dRows] = await pool.query<RowDataPacket[]>(`
+      `, [startOfMonth, endOfMonth]),
+      pool.query<RowDataPacket[]>(`
       SELECT 
         SUM(CASE WHEN type = 'receivable' AND status != 'paid' THEN remaining_amount ELSE 0 END) as recv,
         SUM(CASE WHEN type = 'payable' AND status != 'paid' THEN remaining_amount ELSE 0 END) as pay
       FROM debts
-    `);
-    const totalReceivable = Number(dRows[0]?.recv || 0);
-    const totalPayable = Number(dRows[0]?.pay || 0);
-
-    // 4. Savings
-    const [sRows] = await pool.query<RowDataPacket[]>(
-      'SELECT SUM(current_amount) as total FROM saving_goals WHERE status = "active"'
-    );
-    const totalSavings = Number(sRows[0]?.total || 0);
-
-    // 5. Recent transactions
-    const [txRows] = await pool.query<RowDataPacket[]>(`
+      `),
+      pool.query<RowDataPacket[]>(
+        'SELECT SUM(current_amount) as total FROM saving_goals WHERE status = "active"'
+      ),
+      pool.query<RowDataPacket[]>(`
       SELECT 
         t.id, t.wallet_id, w.name AS wallet_name,
         t.category_id, c.name AS category_name,
@@ -89,14 +83,8 @@ export class ReportService {
       LEFT JOIN wallets w ON t.wallet_id = w.id
       ORDER BY t.transaction_date DESC, t.id DESC
       LIMIT 6
-    `);
-    const recentTransactions = txRows.map(r => ({
-      ...r,
-      amount: Number(r.amount),
-    })) as TransactionModel[];
-
-    // 6. Upcoming or Overdue debts
-    const [dueRows] = await pool.query<RowDataPacket[]>(`
+      `),
+      pool.query<RowDataPacket[]>(`
       SELECT 
         id, type, person_name, original_amount, remaining_amount,
         DATE_FORMAT(created_date, '%Y-%m-%d') as created_date,
@@ -106,7 +94,24 @@ export class ReportService {
       WHERE status != 'paid' AND due_date IS NOT NULL
       ORDER BY due_date ASC
       LIMIT 5
-    `);
+      `),
+      this.budgetService.getActiveWithUsage(),
+    ]);
+
+    const monthlyIncome = Number(mRows[0]?.inc || 0);
+    const monthlyExpense = Number(mRows[0]?.exp || 0);
+    const netCashFlow = monthlyIncome - monthlyExpense;
+
+    const totalReceivable = Number(dRows[0]?.recv || 0);
+    const totalPayable = Number(dRows[0]?.pay || 0);
+
+    const totalSavings = Number(sRows[0]?.total || 0);
+
+    const recentTransactions = txRows.map(r => ({
+      ...r,
+      amount: Number(r.amount),
+    })) as TransactionModel[];
+
     const todayStr = now.toISOString().slice(0, 10);
     const upcomingDebts = dueRows.map(r => {
       let status = r.status;
@@ -119,8 +124,6 @@ export class ReportService {
       };
     }) as DebtModel[];
 
-    // 7. Budget alerts (active budgets with usage >= 80%)
-    const activeBudgets = await this.budgetService.getActiveWithUsage();
     const budgetAlerts = activeBudgets.filter(b => b.usage_percent >= 80);
 
     return {
@@ -160,8 +163,9 @@ export class ReportService {
     }
 
     for (const r of rows) {
-      if (map.has(r.month)) {
-        map.set(r.month, {
+      const month = String(r.month);
+      if (map.has(month)) {
+        map.set(month, {
           income: Number(r.income || 0),
           expense: Number(r.expense || 0),
         });
@@ -213,8 +217,8 @@ export class ReportService {
       const amount = Number(r.total_amount);
       const percentage = totalExpense > 0 ? Math.round((amount / totalExpense) * 100) : 0;
       return {
-        category_id: r.category_id,
-        category_name: r.category_name,
+        category_id: Number(r.category_id),
+        category_name: String(r.category_name),
         total_amount: amount,
         percentage,
       };
@@ -256,7 +260,7 @@ export class ReportService {
     // Calculate backward or forward
     for (let i = reversed.length - 1; i >= 0; i--) {
       trend.unshift({
-        month: reversed[i].month,
+        month: String(reversed[i].month),
         balance: runningBalance,
       });
       runningBalance -= Number(reversed[i].net || 0);

@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { app, dialog } from 'electron';
 import { getPool, withTransaction } from '../database/connection';
-import { RowDataPacket } from 'mysql2/promise';
+import type { RowDataPacket } from '../database/types';
 
 export class BackupService {
   /**
@@ -69,46 +69,36 @@ export class BackupService {
     }
 
     return withTransaction(async (conn) => {
-      // Temporarily disable foreign keys for clean restoration
-      await conn.query('SET FOREIGN_KEY_CHECKS = 0');
+      const order = [
+        'debt_payments',
+        'budget_categories',
+        'transactions',
+        'recurring_transactions',
+        'saving_goals',
+        'debts',
+        'budgets',
+        'categories',
+        'wallets',
+      ];
 
-      try {
-        const order = [
-          'debt_payments',
-          'budget_categories',
-          'transactions',
-          'recurring_transactions',
-          'saving_goals',
-          'debts',
-          'budgets',
-          'categories',
-          'wallets',
-        ];
+      for (const table of order) {
+        await conn.query(`DELETE FROM \`${table}\``);
+      }
 
-        // Clear existing tables
-        for (const t of order) {
-          await conn.query(`DELETE FROM \`${t}\``);
-        }
-
-        // Restore tables in reverse order (independent tables first)
-        const restoreOrder = [...order].reverse();
-        for (const t of restoreOrder) {
-          const rows = data[t];
-          if (Array.isArray(rows) && rows.length > 0) {
-            for (const row of rows) {
-              const keys = Object.keys(row);
-              const values = Object.values(row);
-              const placeholders = keys.map(() => '?').join(', ');
-              const query = `INSERT INTO \`${t}\` (\`${keys.join('`, `')}\`) VALUES (${placeholders})`;
-              await conn.query(query, values);
-            }
+      for (const table of [...order].reverse()) {
+        const rows = data[table];
+        if (Array.isArray(rows) && rows.length > 0) {
+          for (const row of rows) {
+            const keys = Object.keys(row);
+            const values = Object.values(row);
+            const placeholders = keys.map(() => '?').join(', ');
+            const query = `INSERT INTO \`${table}\` (\`${keys.join('`, `')}\`) VALUES (${placeholders})`;
+            await conn.query(query, values);
           }
         }
-
-        return { success: true, message: 'Phục hồi dữ liệu thành công từ file sao lưu.' };
-      } finally {
-        await conn.query('SET FOREIGN_KEY_CHECKS = 1');
       }
+
+      return { success: true, message: 'Phục hồi dữ liệu thành công từ file sao lưu.' };
     });
   }
 

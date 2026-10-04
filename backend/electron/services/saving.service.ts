@@ -1,5 +1,5 @@
-import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { getPool } from '../database/connection';
+import type { RowDataPacket, ResultSetHeader } from '../database/types';
 
 export interface SavingGoalModel {
   id: number;

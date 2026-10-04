@@ -180,8 +180,8 @@ export const Sidebar: React.FC = () => {
           alignItems: 'center',
         }}
       >
-        <span>Desktop v1.0.0</span>
-        <span style={{ color: 'var(--color-income)', fontWeight: 600 }}>● MySQL Local</span>
+        <span>Desktop v2.0.0</span>
+        <span style={{ color: 'var(--color-income)', fontWeight: 600 }}>● SQLite Local</span>
       </div>
     </aside>
   );
