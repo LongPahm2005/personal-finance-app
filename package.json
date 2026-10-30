@@ -14,7 +14,8 @@
     "build:electron": "tsc -p tsconfig.electron.json",
     "preview": "vite preview",
     "lint": "eslint .",
-    "dist": "npm run build && electron-builder --win nsis --config.win.signAndEditExecutable=false"
+    "dist": "npm run build && electron-builder --win nsis --config.win.signAndEditExecutable=false",
+    "postinstall": "node -e \"const fs = require('fs'); if (!fs.existsSync('.env') && fs.existsSync('.env.example')) { fs.copyFileSync('.env.example', '.env'); console.log('[postinstall] Auto-created .env from .env.example'); }\""
   },
   "build": {
     "appId": "com.personalfinance.desktop",
