@@ -370,3 +370,4 @@ export async function initializeSchema(connection: mysql.Connection): Promise<vo
 
   console.log('[Auto-Init] ✅ HỆ THỐNG SẴN SÀNG HOẠT ĐỘNG!');
 }
+
