@@ -9,6 +9,7 @@ import { Budgets } from './pages/Budgets/Budgets';
 import { Savings } from './pages/Savings/Savings';
 import { Reports } from './pages/Reports/Reports';
 import { Settings } from './pages/Settings/Settings';
+import { ForecastScenarios } from './pages/ForecastScenarios/ForecastScenarios';
 import { ToastProvider } from './components/ui/Toast';
 
 export default function App() {
@@ -18,6 +19,8 @@ export default function App() {
         <Routes>
           <Route element={<AppLayout />}>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/forecast-scenarios" element={<ForecastScenarios />} />
+            <Route path="/ai-advisor" element={<Navigate to="/forecast-scenarios" replace />} />
             <Route path="/income" element={<Income />} />
             <Route path="/expense" element={<Expense />} />
             <Route path="/transactions" element={<Transactions />} />

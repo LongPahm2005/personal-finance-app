@@ -11,6 +11,13 @@ import {
   TrendingUp,
   Clock,
   ChevronRight,
+  Sparkles,
+  Zap,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+  ShieldCheck,
+  AlertCircle,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -29,6 +36,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Loading } from '../../components/ui/Loading';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { useToast } from '../../components/ui/Toast';
 import { api } from '../../services/api';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import {
@@ -38,12 +46,16 @@ import {
   BudgetUsage,
   MonthlyCashFlow,
   CategoryExpenseReport,
+  AiRecommendation,
+  AiAnomaly,
+  AiProfile,
 } from '../../types';
 
 const PIE_COLORS = ['#2563EB', '#16A34A', '#F59E0B', '#DC2626', '#8B5CF6', '#EC4899', '#06B6D4', '#64748B'];
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const context = useOutletContext<{ refreshKey?: number }>();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -53,13 +65,22 @@ export const Dashboard: React.FC = () => {
   const [cashFlow, setCashFlow] = useState<MonthlyCashFlow[]>([]);
   const [categoryExpenses, setCategoryExpenses] = useState<CategoryExpenseReport[]>([]);
 
+  // AI Decision Support states on Dashboard
+  const [recommendations, setRecommendations] = useState<AiRecommendation[]>([]);
+  const [anomalies, setAnomalies] = useState<AiAnomaly[]>([]);
+  const [profile, setProfile] = useState<AiProfile | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
   const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true);
-      const [sumRes, cfRes, ceRes] = await Promise.all([
+      const [sumRes, cfRes, ceRes, recsRes, anomRes, profRes] = await Promise.all([
         api.reports.getDashboardSummary(),
         api.reports.getMonthlyCashFlow(),
         api.reports.getCategoryExpenses(),
+        api.ai.getRecommendations(),
+        api.ai.getAnomalies(),
+        api.ai.getProfile(),
       ]);
 
       if (sumRes.success && sumRes.data) {
@@ -83,12 +104,88 @@ export const Dashboard: React.FC = () => {
       if (ceRes.success && ceRes.data) {
         setCategoryExpenses(ceRes.data);
       }
+      if (recsRes.success && recsRes.data) {
+        setRecommendations(recsRes.data);
+      }
+      if (anomRes.success && anomRes.data) {
+        setAnomalies(anomRes.data);
+      }
+      if (profRes.success && profRes.data) {
+        setProfile(profRes.data);
+      }
     } catch (e) {
       console.error('Error loading dashboard:', e);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const handleGenerateAiRecommendations = async () => {
+    setIsAiLoading(true);
+    try {
+      const res = await api.ai.generateRecommendations();
+      if (res.success && res.data) {
+        setRecommendations(res.data);
+        toast.success('AI đã phân tích dữ liệu và cập nhật khuyến nghị mới!');
+      } else {
+        toast.error('Lỗi phân tích AI', res.error || 'Vui lòng kiểm tra lại');
+      }
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const handleApplyRecommendation = async (id: number) => {
+    try {
+      const res = await api.ai.applyRecommendation(id);
+      if (res.success) {
+        setRecommendations(prev => prev.map(r => r.id === id ? { ...r, status: 'accepted' } : r));
+        toast.success('Đã áp dụng quyết định thành công!');
+        loadDashboardData();
+      }
+    } catch {
+      toast.error('Lỗi khi áp dụng khuyến nghị');
+    }
+  };
+
+  const handleDismissRecommendation = async (id: number) => {
+    try {
+      const res = await api.ai.dismissRecommendation(id);
+      if (res.success) {
+        setRecommendations(prev => prev.map(r => r.id === id ? { ...r, status: 'dismissed' } : r));
+        toast.success('Đã bỏ qua khuyến nghị');
+      }
+    } catch {
+      toast.error('Lỗi thao tác');
+    }
+  };
+
+  const handleScanAnomalies = async () => {
+    setIsAiLoading(true);
+    try {
+      const res = await api.ai.scanAnomalies();
+      if (res.success) {
+        toast.success(`Đã quét xong: Phát hiện ${res.data || 0} giao dịch bất thường!`);
+        const anomRes = await api.ai.getAnomalies();
+        if (anomRes.success && anomRes.data) setAnomalies(anomRes.data);
+      }
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const handleEvaluateHealth = async () => {
+    setIsAiLoading(true);
+    try {
+      const res = await api.ai.evaluateHealthScore();
+      if (res.success && res.data) {
+        if (profile) setProfile({ ...profile, financial_health_score: res.data.score });
+        toast.success(`Điểm sức khỏe tài chính: ${res.data.score}/100 (${res.data.assessment})`);
+      }
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   useEffect(() => {
     loadDashboardData();
@@ -246,6 +343,168 @@ export const Dashboard: React.FC = () => {
           ))}
         </div>
       )}
+
+      {/* 2.5 HỖ TRỢ RA QUYẾT ĐỊNH & CẢNH BÁO TÀI CHÍNH TỪ AI (Trọng tâm đề tài) */}
+      <Card style={{ padding: '20px 24px', border: '1px solid #bfdbfe', background: 'linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Sparkles size={20} color="#ffffff" />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#1e3a8a' }}>
+                  Khuyến nghị & Quyết định Tài chính từ AI
+                </h3>
+                <Badge variant="income">
+                  Sức khỏe: {profile?.financial_health_score ?? 100}/100
+                </Badge>
+              </div>
+              <div style={{ fontSize: '12.5px', color: '#475569', marginTop: '2px' }}>
+                AI phân tích cơ cấu thu chi, nợ và số dư để gợi ý tối ưu dòng tiền cá nhân
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <Button
+              size="sm"
+              variant="outline"
+              icon={<ShieldCheck size={14} />}
+              onClick={handleEvaluateHealth}
+              isLoading={isAiLoading}
+            >
+              Đo lại điểm
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              icon={<AlertCircle size={14} />}
+              onClick={handleScanAnomalies}
+              isLoading={isAiLoading}
+            >
+              Quét chi tiêu lạ
+            </Button>
+            <Button
+              size="sm"
+              variant="primary"
+              icon={<RefreshCw size={14} />}
+              onClick={handleGenerateAiRecommendations}
+              isLoading={isAiLoading}
+            >
+              Phân tích lại với AI
+            </Button>
+          </div>
+        </div>
+
+        {/* Danh sách cảnh báo chi tiêu bất thường (nếu có) */}
+        {anomalies.length > 0 && (
+          <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {anomalies.map((an) => (
+              <div
+                key={an.id}
+                style={{
+                  backgroundColor: '#fff1f2',
+                  border: '1px solid #fecdd3',
+                  borderRadius: '8px',
+                  padding: '10px 14px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <AlertTriangle size={16} color="#e11d48" />
+                  <span style={{ fontSize: '13px', color: '#9f1239', fontWeight: 600 }}>
+                    {an.description}
+                  </span>
+                  <span style={{ fontSize: '12px', color: '#be123c' }}>
+                    — {an.suggested_action}
+                  </span>
+                </div>
+                <Badge variant="expense">GIAO DỊCH BẤT THƯỜNG</Badge>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Danh sách Khuyến nghị Quyết định AI */}
+        {recommendations.filter(r => r.status === 'pending').length === 0 ? (
+          <div
+            style={{
+              padding: '18px',
+              textAlign: 'center',
+              backgroundColor: '#ffffff',
+              borderRadius: '8px',
+              border: '1px dashed #cbd5e1',
+              color: '#64748b',
+              fontSize: '13px',
+            }}
+          >
+            <CheckCircle size={20} color="#16a34a" style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
+            Tài chính của bạn hiện tại đang an toàn và ổn định. Nhấn <strong>"Phân tích lại với AI"</strong> để AI rà soát sâu các dữ liệu thu chi mới nhất.
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '12px' }}>
+            {recommendations
+              .filter(r => r.status === 'pending')
+              .slice(0, 4)
+              .map(rec => (
+                <div
+                  key={rec.id}
+                  style={{
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '10px',
+                    padding: '14px 16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                      <span style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b' }}>
+                        {rec.title}
+                      </span>
+                      <Badge variant={rec.confidence_score >= 0.85 ? 'income' : 'info'}>
+                        {rec.confidence_score ? `Độ tin cậy ${Math.round(rec.confidence_score * 100)}%` : 'KHUYẾN NGHỊ'}
+                      </Badge>
+                    </div>
+                    <p style={{ margin: '0 0 10px 0', fontSize: '12.5px', color: '#475569', lineHeight: 1.45 }}>
+                      {rec.summary}
+                    </p>
+                    {rec.potential_savings > 0 && (
+                      <div style={{ fontSize: '11.5px', color: '#0369a1', fontWeight: 600, marginBottom: '12px' }}>
+                        🎯 Tiết kiệm tiềm năng: {formatCurrency(rec.potential_savings)}
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      icon={<XCircle size={14} />}
+                      onClick={() => handleDismissRecommendation(rec.id)}
+                    >
+                      Bỏ qua
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      icon={<Zap size={14} />}
+                      onClick={() => handleApplyRecommendation(rec.id)}
+                    >
+                      Áp dụng quyết định
+                    </Button>
+                  </div>
+                </div>
+              ))}
+          </div>
+        )}
+      </Card>
 
       {/* 3. Charts Section */}
       <div

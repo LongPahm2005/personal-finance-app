@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Plus, Search, Trash2, Edit2, ArrowUpRight } from 'lucide-react';
 import { Card, StatCard } from '../../components/ui/Card';
@@ -39,6 +39,7 @@ export const Expense: React.FC = () => {
   const [formAmount, setFormAmount] = useState('');
   const [formDate, setFormDate] = useState(new Date().toISOString().slice(0, 10));
   const [formNote, setFormNote] = useState('');
+  const submittingRef = useRef(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -101,6 +102,8 @@ export const Expense: React.FC = () => {
       toast.error('Số tiền phải lớn hơn 0.');
       return;
     }
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
     try {
       if (editingTx) {
@@ -138,6 +141,7 @@ export const Expense: React.FC = () => {
     } catch (err: unknown) {
       toast.error('Lỗi', (err as Error).message);
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };
@@ -325,13 +329,22 @@ export const Expense: React.FC = () => {
             <Button variant="secondary" onClick={() => setIsAddOpen(false)} disabled={submitting}>
               Hủy
             </Button>
-            <Button variant="danger" onClick={handleSave} isLoading={submitting}>
+            <Button
+              variant="danger"
+              type="submit"
+              form="expense-transaction-form"
+              isLoading={submitting}
+            >
               {editingTx ? 'Lưu thay đổi' : 'Thêm khoản chi'}
             </Button>
           </>
         }
       >
-        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <form
+          id="expense-transaction-form"
+          onSubmit={handleSave}
+          style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
+        >
           <Input
             label="Số tiền (₫)"
             type="number"

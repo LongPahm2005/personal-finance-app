@@ -11,6 +11,7 @@ import {
   PiggyBank,
   BarChart3,
   Settings,
+  TrendingUp,
 } from 'lucide-react';
 
 interface NavItem {
@@ -48,9 +49,10 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    groupName: 'PHÂN TÍCH',
+    groupName: 'PHÂN TÍCH & DỰ BÁO',
     items: [
-      { to: '/reports', label: 'Báo cáo', icon: <BarChart3 size={18} /> },
+      { to: '/reports', label: 'Báo cáo tài chính', icon: <BarChart3 size={18} /> },
+      { to: '/forecast-scenarios', label: 'Dự báo & Mô phỏng', icon: <TrendingUp size={18} color="#0284c7" /> },
     ],
   },
   {
