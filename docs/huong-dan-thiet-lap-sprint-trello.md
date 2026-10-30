@@ -1,10 +1,12 @@
 # HƯỚNG DẪN THIẾT LẬP & VẬN HÀNH SPRINT TRÊN TRELLO
+
 ## DỰ ÁN: HỆ THỐNG HỖ TRỢ RA QUYẾT ĐỊNH TÀI CHÍNH CÁ NHÂN BẰNG AI (AI-FDSS)
+
 ### MÔN HỌC: IS402 – HỆ HỖ TRỢ RA QUYẾT ĐỊNH (DSS) | LỚP: IS 402 A | NHÓM: 17 – ĐẠI HỌC DUY TÂN
 
 ---
 
-> **MỤC ĐÍCH TÀI LIỆU:**  
+> **MỤC ĐÍCH TÀI LIỆU:**
 > Tài liệu này được biên soạn như một cuốn **"Cẩm nang vận hành Scrum" (Scrum Playbook)** từ ngày đầu tiên bắt đầu dự án. Giúp Trưởng nhóm và các thành viên dễ dàng sao chép (copy-paste) toàn bộ danh sách công việc lên Trello, quản lý tiến độ chuẩn mực, tự tin trả lời vấn đáp trước Giảng viên hướng dẫn (*Thầy Nguyễn Quang Ánh*).
 
 ---
@@ -12,6 +14,7 @@
 ## PHẦN 1: CẤU TRÚC BẢNG TRELLO CHUẨN AGILE/SCRUM
 
 ### 1.1 Khởi tạo 5 Cột (Lists) trên Trello
+
 Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` với 5 cột theo thứ tự từ trái sang phải:
 
 ```
@@ -28,22 +31,24 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
 
 ### 1.2 Thiết lập Hệ thống Nhãn màu (Labels)
 
-| Tên Nhãn | Mã màu Trello | Ý nghĩa phân loại |
-| :--- | :---: | :--- |
-| `Sprint 1` | Xanh dương | Giai đoạn 1: Khảo sát, BFD, UCD, Thiết kế CSDL |
-| `Sprint 2` | Xanh lá | Giai đoạn 2: Khung Electron, CSDL MySQL & Core TPS |
-| `Sprint 3` | Vàng | Giai đoạn 3: Ngân sách, Sổ nợ & Thuật toán DSS |
-| `Sprint 4` | Tím | Giai đoạn 4: AI Gemini, RAG Finance, What-If |
-| `Sprint 5` | Đỏ | Giai đoạn 5: Kiểm thử, Đóng gói .exe & Báo cáo |
-| `Backend/DB` | Cam | Liên quan đến MySQL, SQL queries, DDL |
-| `Frontend` | Xanh lơ | Liên quan đến UI React, biểu đồ Recharts |
-| `AI/DSS` | Hồng | Liên quan đến Gemini API, mô hình phạt lỗi |
-| `Docs/QA` | Xám | Báo cáo Word, Slide, Test cases |
+| Tên Nhãn     | Mã màu Trello | Ý nghĩa phân loại                                   |
+| :------------- | :-------------: | :------------------------------------------------------ |
+| `Sprint 1`   |  Xanh dương  | Giai đoạn 1: Khảo sát, BFD, UCD, Thiết kế CSDL    |
+| `Sprint 2`   |    Xanh lá    | Giai đoạn 2: Khung Electron, CSDL MySQL & Core TPS    |
+| `Sprint 3`   |      Vàng      | Giai đoạn 3: Ngân sách, Sổ nợ & Thuật toán DSS  |
+| `Sprint 4`   |      Tím      | Giai đoạn 4: AI Gemini, RAG Finance, What-If          |
+| `Sprint 5`   |      Đỏ      | Giai đoạn 5: Kiểm thử, Đóng gói .exe & Báo cáo |
+| `Backend/DB` |       Cam       | Liên quan đến MySQL, SQL queries, DDL                |
+| `Frontend`   |    Xanh lơ    | Liên quan đến UI React, biểu đồ Recharts          |
+| `AI/DSS`     |      Hồng      | Liên quan đến Gemini API, mô hình phạt lỗi       |
+| `Docs/QA`    |      Xám      | Báo cáo Word, Slide, Test cases                       |
 
 ---
 
 ### 1.3 Quy ước Ước lượng Điểm độ khó (Story Points)
+
 Áp dụng dãy số Fibonacci rút gọn để ước lượng độ phức tạp của mỗi thẻ:
+
 * **1 Point:** Task rất nhỏ (viết 1 hàm đơn giản, sửa lỗi chính tả, đổi màu UI) ~ Nửa ngày.
 * **2 Points:** Task nhỏ (tạo 1 form nhập liệu, viết script migration đơn giản) ~ 1 ngày.
 * **3 Points:** Task trung bình (xây dựng 1 trang quản lý, viết 1 câu SQL phức tạp) ~ 2-3 ngày.
@@ -57,12 +62,14 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
 ---
 
 ### 🚀 SPRINT 1: KHỞI TẠO DỰ ÁN, ĐẶC TẢ NGHIỆP VỤ & THIẾT KẾ CSDL (17 BẢNG)
+
 * **Thời gian thực hiện:** 03/10/2026 – 16/10/2026 (2 tuần)
 * **Sprint Goal (Mục tiêu Sprint):** *Hoàn thiện khung tài liệu phân tích, chốt cấu trúc ERD 17 bảng MySQL và thiết lập môi trường Git CI/CD.*
 
 #### Danh sách Thẻ (Cards) Sprint 1:
 
 ##### Card 1.1: [SP1-01] Khởi tạo Repository Git & Cấu hình GitHub Actions CI/CD
+
 * **Nhãn:** `Sprint 1`, `Backend/DB` | **Story Points:** 3 | **Người nhận việc (Pull):** Phạm Văn Long
 * **Mô tả:**
   ```text
@@ -75,6 +82,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Cấu hình `.github/workflows/ci.yml` tự động kiểm tra cú pháp khi Push/PR.
 
 ##### Card 1.2: [SP1-02] Khảo sát hiện trạng & Vẽ Sơ đồ Phân rã Chức năng Nghiệp vụ (BFD)
+
 * **Nhãn:** `Sprint 1`, `Docs/QA` | **Story Points:** 3 | **Người nhận việc (Pull):** Phạm Văn Long
 * **Mô tả:**
   ```text
@@ -86,6 +94,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Xuất ảnh `2_bfd_diagram.png` chèn vào báo cáo.
 
 ##### Card 1.3: [SP1-03] Thiết kế Mô hình Quan hệ Thực thể (ERD 17 bảng chuẩn 3NF)
+
 * **Nhãn:** `Sprint 1`, `Backend/DB` | **Story Points:** 5 | **Người nhận việc (Pull):** Trần Văn Tuấn
 * **Mô tả:**
   ```text
@@ -98,6 +107,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Xuất sơ đồ `4_erd_diagram.png`.
 
 ##### Card 1.4: [SP1-04] Soạn thảo Bảng Từ điển Dữ liệu chi tiết (Data Dictionary)
+
 * **Nhãn:** `Sprint 1`, `Backend/DB` | **Story Points:** 3 | **Người nhận việc (Pull):** Trần Văn Tuấn
 * **Mô tả:**
   ```text
@@ -108,6 +118,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Chèn nội dung vào Chương 3 của báo cáo.
 
 ##### Card 1.5: [SP1-05] Nghiên cứu Google Gemini API & Thiết kế Mô hình Phạt lỗi (Penalty Model)
+
 * **Nhãn:** `Sprint 1`, `AI/DSS` | **Story Points:** 5 | **Người nhận việc (Pull):** Tạ Đức Ngọc
 * **Mô tả:**
   ```text
@@ -119,6 +130,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Xác định 4 quy tắc trừ điểm: Thâm hụt thu chi (-20đ), Dự phòng mỏng (-15đ), Tỷ lệ nợ cao (-25đ), Nợ quá hạn (-20đ).
 
 ##### Card 1.6: [SP1-06] Vẽ Sơ đồ Use Case tổng thể (UCD) & Phác thảo Wireframe giao diện
+
 * **Nhãn:** `Sprint 1`, `Frontend` | **Story Points:** 3 | **Người nhận việc (Pull):** Hà Văn Hoàng Tú & Nguyễn Hữu Phú
 * **Mô tả:**
   ```text
@@ -131,12 +143,14 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
 ---
 
 ### 🚀 SPRINT 2: DỰNG KHUNG ELECTRON, CƠ CHẾ AUTO-INIT DB & NGHIỆP VỤ CORE (TPS)
+
 * **Thời gian thực hiện:** 17/10/2026 – 30/10/2026 (2 tuần)
 * **Sprint Goal (Mục tiêu Sprint):** *Ứng dụng desktop khởi động mượt mà, tự động tạo CSDL trên máy mới và thực hiện trơn tru các nghiệp vụ ghi chép ví/dòng tiền.*
 
 #### Danh sách Thẻ (Cards) Sprint 2:
 
 ##### Card 2.1: [SP2-01] Khởi tạo dự án Electron 34 + React 19 + TypeScript + Vite + Tailwind
+
 * **Nhãn:** `Sprint 2`, `Frontend` | **Story Points:** 5 | **Người nhận việc (Pull):** Phạm Văn Long
 * **Mô tả:**
   ```text
@@ -148,6 +162,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Cài đặt Tailwind CSS và thư viện icon `lucide-react`.
 
 ##### Card 2.2: [SP2-02] Xây dựng Cơ chế Tự động Khởi tạo CSDL MySQL (Zero-Config DB)
+
 * **Nhãn:** `Sprint 2`, `Backend/DB` | **Story Points:** 5 | **Người nhận việc (Pull):** Trần Văn Tuấn
 * **Mô tả:**
   ```text
@@ -159,6 +174,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Gọi hàm tự động khi ứng dụng khởi động (`app.whenReady()`).
 
 ##### Card 2.3: [SP2-03] Xây dựng Module Quản lý Danh sách Ví & Danh mục thu chi đa cấp
+
 * **Nhãn:** `Sprint 2`, `Frontend` | **Story Points:** 3 | **Người nhận việc (Pull):** Hà Văn Hoàng Tú
 * **Mô tả:**
   ```text
@@ -170,6 +186,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] IPC kết nối MySQL lưu trữ dữ liệu an toàn.
 
 ##### Card 2.4: [SP2-04] Xây dựng Module Ghi chép Giao dịch Thu/Chi & Lọc lịch sử
+
 * **Nhãn:** `Sprint 2`, `Frontend` | **Story Points:** 5 | **Người nhận việc (Pull):** Hà Văn Hoàng Tú
 * **Mô tả:**
   ```text
@@ -181,6 +198,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Bảng lịch sử giao dịch có phân trang, tìm kiếm và bộ lọc theo ngày.
 
 ##### Card 2.5: [SP2-05] Xây dựng Service gọi Gemini AI bảo mật qua IPC (Ẩn API Key)
+
 * **Nhãn:** `Sprint 2`, `AI/DSS` | **Story Points:** 3 | **Người nhận việc (Pull):** Tạ Đức Ngọc
 * **Mô tả:**
   ```text
@@ -192,6 +210,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Thiết lập IPC channel `ai:chat`, `ai:recommendations`.
 
 ##### Card 2.6: [SP2-06] Xây dựng Layout tổng thể Sidebar, Header & Navigation
+
 * **Nhãn:** `Sprint 2`, `Frontend` | **Story Points:** 2 | **Người nhận việc (Pull):** Nguyễn Hữu Phú
 * **Mô tả:**
   ```text
@@ -204,12 +223,14 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
 ---
 
 ### 🚀 SPRINT 3: NGÂN SÁCH, SỔ NỢ 2 CHIỀU & THUẬT TOÁN CHẤM ĐIỂM DSS
+
 * **Thời gian thực hiện:** 31/10/2026 – 13/11/2026 (2 tuần)
 * **Sprint Goal (Mục tiêu Sprint):** *Hoàn thiện toàn bộ các tính năng kiểm soát tài chính nâng cao (Ngân sách, Công nợ) và đưa vào hoạt động động cơ chấm điểm sức khỏe tài chính DSS.*
 
 #### Danh sách Thẻ (Cards) Sprint 3:
 
 ##### Card 3.1: [SP3-01] Xây dựng Module Quản lý Hạn mức Ngân sách & Cảnh báo vượt ngưỡng
+
 * **Nhãn:** `Sprint 3`, `Frontend` | **Story Points:** 3 | **Người nhận việc (Pull):** Hà Văn Hoàng Tú
 * **Mô tả:**
   ```text
@@ -221,6 +242,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Thanh ProgressBar đổi màu đỏ khi tỷ lệ sử dụng đạt >= 80%.
 
 ##### Card 3.2: [SP3-02] Xây dựng Module Sổ theo dõi Công nợ 2 chiều & Trả nợ từng đợt
+
 * **Nhãn:** `Sprint 3`, `Frontend` | **Story Points:** 5 | **Người nhận việc (Pull):** Hà Văn Hoàng Tú
 * **Mô tả:**
   ```text
@@ -232,6 +254,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Cảnh báo badge đỏ khi khoản nợ đã quá hạn ngày trả.
 
 ##### Card 3.3: [SP3-03] Viết các câu truy vấn SQL phức tạp phục vụ Hỗ trợ ra quyết định (Yêu cầu 6)
+
 * **Nhãn:** `Sprint 3`, `Backend/DB` | **Story Points:** 5 | **Người nhận việc (Pull):** Trần Văn Tuấn
 * **Mô tả:**
   ```text
@@ -243,6 +266,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Truy vấn 3: Rà soát ngân sách đã chi tiêu trên 80% hạn mức.
 
 ##### Card 3.4: [SP3-04] Cài đặt Thuật toán Đánh giá Sức khỏe Tài chính (Penalty Model)
+
 * **Nhãn:** `Sprint 3`, `AI/DSS` | **Story Points:** 5 | **Người nhận việc (Pull):** Tạ Đức Ngọc
 * **Mô tả:**
   ```text
@@ -254,6 +278,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Lưu kết quả đánh giá vào bảng `ai_user_profiles`.
 
 ##### Card 3.5: [SP3-05] Cài đặt Thuật toán Quét & Cảnh báo Chi tiêu Bất thường (Anomaly Detection)
+
 * **Nhãn:** `Sprint 3`, `AI/DSS` | **Story Points:** 3 | **Người nhận việc (Pull):** Tạ Đức Ngọc
 * **Mô tả:**
   ```text
@@ -265,6 +290,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Lưu vào bảng `ai_anomalies` và hiển thị thẻ cảnh báo màu hồng.
 
 ##### Card 3.6: [SP3-06] Xây dựng Biểu đồ Thu/Chi 12 tháng & Phân bổ Cơ cấu Chi tiêu (Recharts)
+
 * **Nhãn:** `Sprint 3`, `Frontend` | **Story Points:** 3 | **Người nhận việc (Pull):** Nguyễn Hữu Phú
 * **Mô tả:**
   ```text
@@ -278,12 +304,14 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
 ---
 
 ### 🚀 SPRINT 4: TÍCH HỢP GEMINI AI, RAG FINANCE & DỰ BÁO WHAT-IF
+
 * **Thời gian thực hiện:** 14/11/2026 – 27/11/2026 (2 tuần)
 * **Sprint Goal (Mục tiêu Sprint):** *Hiện thực hóa trọn vẹn điểm cộng Trí tuệ Nhân tạo (+ AI Bonus) với Dự báo chuỗi thời gian, Mô phỏng What-If và Trợ lý AI Copilot.*
 
 #### Danh sách Thẻ (Cards) Sprint 4:
 
 ##### Card 4.1: [SP4-01] Xây dựng Module Dự báo Dòng tiền Tương lai 3 Tháng (Time-Series)
+
 * **Nhãn:** `Sprint 4`, `AI/DSS`, `Frontend` | **Story Points:** 5 | **Người nhận việc (Pull):** Tạ Đức Ngọc & Nguyễn Hữu Phú
 * **Mô tả:**
   ```text
@@ -295,6 +323,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Biểu đồ vùng AreaChart nhiều dải màu và bảng kê số liệu chi tiết.
 
 ##### Card 4.2: [SP4-02] Xây dựng Công cụ Mô phỏng Kịch bản Giả định What-If
+
 * **Nhãn:** `Sprint 4`, `AI/DSS`, `Frontend` | **Story Points:** 5 | **Người nhận việc (Pull):** Tạ Đức Ngọc & Nguyễn Hữu Phú
 * **Mô tả:**
   ```text
@@ -307,6 +336,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Lưu kịch bản vào bảng `ai_scenarios`.
 
 ##### Card 4.3: [SP4-03] Xây dựng Trợ lý Cố vấn Tài chính Toàn cục (Floating AI Copilot Widget)
+
 * **Nhãn:** `Sprint 4`, `AI/DSS`, `Frontend` | **Story Points:** 5 | **Người nhận việc (Pull):** Phạm Văn Long & Tạ Đức Ngọc
 * **Mô tả:**
   ```text
@@ -318,6 +348,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Gợi ý sẵn các câu hỏi nhanh: "Tháng này tôi còn bao nhiêu tiền tiêu?", "Cho tôi lời khuyên tiết kiệm".
 
 ##### Card 4.4: [SP4-04] Xây dựng Cơ chế Khuyến nghị Can thiệp 1-Click (1-Click Apply)
+
 * **Nhãn:** `Sprint 4`, `AI/DSS`, `Frontend` | **Story Points:** 3 | **Người nhận việc (Pull):** Phạm Văn Long & Tạ Đức Ngọc
 * **Mô tả:**
   ```text
@@ -329,6 +360,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Lưu vết vào bảng `ai_recommendations` với trạng thái `applied`.
 
 ##### Card 4.5: [SP4-05] Xây dựng Tính năng Xuất Báo cáo Tài chính định dạng CSV (Yêu cầu 5)
+
 * **Nhãn:** `Sprint 4`, `Backend/DB` | **Story Points:** 2 | **Người nhận việc (Pull):** Trần Văn Tuấn
 * **Mô tả:**
   ```text
@@ -339,6 +371,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Xuất danh sách giao dịch, báo cáo ngân sách và lịch sử công nợ.
 
 ##### Card 4.6: [SP4-06] Hoàn thiện Bố cục Trung tâm Điều hành Dashboard
+
 * **Nhãn:** `Sprint 4`, `Frontend` | **Story Points:** 3 | **Người nhận việc (Pull):** Nguyễn Hữu Phú
 * **Mô tả:**
   ```text
@@ -351,12 +384,14 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
 ---
 
 ### 🚀 SPRINT 5: KIỂM THỬ TOÀN DIỆN, ĐÓNG GÓI INSTALLER & HOÀN THIỆN HỒ SƠ
+
 * **Thời gian thực hiện:** 28/11/2026 – 12/12/2026 (2 tuần)
 * **Sprint Goal (Mục tiêu Sprint):** *Đóng gói file cài đặt Windows (.exe Setup), hoàn thiện 100% hồ sơ báo cáo Word, chuẩn bị slide và demo xuất sắc trước hội đồng.*
 
 #### Danh sách Thẻ (Cards) Sprint 5:
 
 ##### Card 5.1: [SP5-01] Kiểm thử Chức năng (Functional Testing) & Viết Bảng Test Cases
+
 * **Nhãn:** `Sprint 5`, `Docs/QA` | **Story Points:** 3 | **Người nhận việc (Pull):** Nguyễn Hữu Phú & Hà Văn Hoàng Tú
 * **Mô tả:**
   ```text
@@ -367,6 +402,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Chạy lệnh `npm run build` đảm bảo 0 lỗi biên dịch TypeScript.
 
 ##### Card 5.2: [SP5-02] Đóng gói Ứng dụng thành Bộ cài đặt Độc lập Windows (.exe Installer)
+
 * **Nhãn:** `Sprint 5`, `Backend/DB` | **Story Points:** 5 | **Người nhận việc (Pull):** Phạm Văn Long
 * **Mô tả:**
   ```text
@@ -378,6 +414,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Xuất bản file `release/Personal Finance Setup 3.0.0.exe`.
 
 ##### Card 5.3: [SP5-03] Thử nghiệm Triển khai Ứng dụng trên Máy tính Khách mới
+
 * **Nhãn:** `Sprint 5`, `Backend/DB` | **Story Points:** 3 | **Người nhận việc (Pull):** Trần Văn Tuấn
 * **Mô tả:**
   ```text
@@ -388,6 +425,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Xác nhận ứng dụng tự sinh Database `personal_finance` và 17 bảng dữ liệu thành công.
 
 ##### Card 5.4: [SP5-04] Hoàn thiện Bộ Hồ sơ Phân tích & Thiết kế HTTT (.docx & .pdf)
+
 * **Nhãn:** `Sprint 5`, `Docs/QA` | **Story Points:** 3 | **Người nhận việc (Pull):** Nguyễn Hữu Phú & Phạm Văn Long
 * **Mô tả:**
   ```text
@@ -399,6 +437,7 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
   - [ ] Xuất bản file Word `.docx` và file `.pdf` nộp bài.
 
 ##### Card 5.5: [SP5-05] Thiết kế Slide Báo cáo PowerPoint & Chuẩn bị Kịch bản Demo Live
+
 * **Nhãn:** `Sprint 5`, `Docs/QA` | **Story Points:** 3 | **Người nhận việc (Pull):** Cả 5 thành viên
 * **Mô tả:**
   ```text
@@ -415,26 +454,30 @@ Tạo một bảng mới trên Trello đặt tên: `IS402_Nhom17_AI_FDSS_Scrum` 
 Khi Giảng viên hỏi về phương pháp quản lý dự án, nhóm trả lời theo các kịch bản mẫu sau:
 
 #### Câu hỏi 1: "Nhóm em tổ chức các cuộc họp Sprint như thế nào?"
-> **Trả lời:**  
-> *"Dạ thưa thầy, nhóm em áp dụng mô hình Scrum gồm 5 Sprint, mỗi Sprint kéo dài đúng 2 tuần (tổng cộng 10 tuần từ 03/10 đến 12/12/2026).  
-> * Đầu mỗi Sprint, nhóm họp **Sprint Planning** 30 phút để chốt mục tiêu (Sprint Goal) và kéo task từ Product Backlog sang Sprint Backlog.  
-> * Trong tuần, nhóm duy trì **Daily Standup** ngắn 10 phút qua Discord vào mỗi buổi tối để chia sẻ: Hôm qua đã làm gì, hôm nay làm gì, và có ai gặp trở ngại (blocker) không để hỗ trợ kịp thời.  
+
+> **Trả lời:***"Dạ thưa thầy, nhóm em áp dụng mô hình Scrum gồm 5 Sprint, mỗi Sprint kéo dài đúng 2 tuần (tổng cộng 10 tuần từ 03/10 đến 12/12/2026).
+>
+> * Đầu mỗi Sprint, nhóm họp **Sprint Planning** 30 phút để chốt mục tiêu (Sprint Goal) và kéo task từ Product Backlog sang Sprint Backlog.
+> * Trong tuần, nhóm duy trì **Daily Standup** ngắn 10 phút qua Discord vào mỗi buổi tối để chia sẻ: Hôm qua đã làm gì, hôm nay làm gì, và có ai gặp trở ngại (blocker) không để hỗ trợ kịp thời.
 > * Cuối mỗi Sprint, nhóm họp **Sprint Review** để demo tính năng đã hoàn thành và **Sprint Retrospective** để rút kinh nghiệm cho Sprint tiếp theo."*
 
 #### Câu hỏi 2: "Tại sao theo lý thuyết Scrum không gán người phụ trách, mà trên Trello của nhóm lại có tên từng bạn?"
-> **Trả lời:**  
-> *"Dạ thưa thầy, theo Scrum Guide chuẩn thì ban đầu trong Backlog các task là trách nhiệm chung của cả đội và không bị áp đặt phân công (No Push).  
+
+> **Trả lời:**
+> *"Dạ thưa thầy, theo Scrum Guide chuẩn thì ban đầu trong Backlog các task là trách nhiệm chung của cả đội và không bị áp đặt phân công (No Push).
 > Tuy nhiên, trong buổi họp Sprint Planning, nhóm em áp dụng **Cơ chế Kéo việc (Pull Mechanism)**: Các thành viên tự giác xung phong nhận task (Pull task) phù hợp với thế mạnh kỹ thuật của mình. Khi bạn nhận làm thì nhóm mới gắn Avatar/Tên lên Trello để cả đội minh bạch tiến độ và thuận tiện cho việc kiểm thử chéo (Review/QA) ạ."*
 
 #### Câu hỏi 3: "Nếu đến cuối Sprint mà có task chưa kịp hoàn thành thì nhóm xử lý thế nào?"
-> **Trả lời:**  
-> *"Dạ thưa thầy, theo nguyên tắc của Scrum, nhóm em tuyệt đối không gia hạn thời gian của Sprint (Timebox bất biến là 2 tuần).  
+
+> **Trả lời:**
+> *"Dạ thưa thầy, theo nguyên tắc của Scrum, nhóm em tuyệt đối không gia hạn thời gian của Sprint (Timebox bất biến là 2 tuần).
 > Nếu một task chưa đạt định nghĩa hoàn thành (Definition of Done - DoD), task đó sẽ được chuyển ngược về Product Backlog để nhóm đánh giá lại độ ưu tiên trong buổi Sprint Planning tiếp theo, đồng thời họp Retrospective để tìm nguyên nhân (do ước lượng sai Story Points hay do vướng mắc kỹ thuật) để cải thiện vận tốc (Velocity) của nhóm."*
 
 ---
 
 > [!TIP]
-> **HƯỚNG DẪN DÀNH CHO TRƯỞNG NHÓM (LONG):**  
-> 1. Mở Trello trên trình duyệt, tạo bảng và tạo 5 cột.  
-> 2. Lần lượt copy tiêu đề và checklist của từng Card ở Phần 2 dán vào Trello (chỉ mất khoảng 10-15 phút).  
+> **HƯỚNG DẪN DÀNH CHO TRƯỞNG NHÓM (LONG):**
+>
+> 1. Mở Trello trên trình duyệt, tạo bảng và tạo 5 cột.
+> 2. Lần lượt copy tiêu đề và checklist của từng Card ở Phần 2 dán vào Trello (chỉ mất khoảng 10-15 phút).
 > 3. Chụp 1 ảnh chụp màn hình bảng Trello hoàn chỉnh và lưu vào file báo cáo Word để minh chứng cho Chương 6!
