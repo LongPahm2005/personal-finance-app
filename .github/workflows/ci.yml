@@ -82,3 +82,4 @@ jobs:
         with:
           name: personal-finance-windows-installer
           path: release/*.exe
+

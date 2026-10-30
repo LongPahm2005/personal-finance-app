@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config();
 
-import { closePool, testConnection } from './database/connection';
+import { closePool, testConnection, ensureDatabaseInitialized } from './database/connection';
 import { registerCategoryIpc } from './ipc/category.ipc';
 import { registerWalletIpc } from './ipc/wallet.ipc';
 import { registerTransactionIpc } from './ipc/transaction.ipc';
@@ -73,7 +73,10 @@ function registerAllIpc() {
 }
 
 app.whenReady().then(async () => {
-  // Test connection on boot
+  // 1. Tự động kiểm tra và khởi tạo Database + 17 bảng nếu mang sang máy mới chưa có
+  await ensureDatabaseInitialized();
+
+  // 2. Kiểm tra kết nối sau khi đã đảm bảo DB tồn tại
   const connTest = await testConnection();
   if (connTest.success) {
     console.log(connTest.message);
