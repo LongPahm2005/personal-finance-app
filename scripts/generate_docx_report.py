@@ -6,6 +6,8 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import OxmlElement, parse_xml
 from docx.oxml.ns import nsdecls, qn
 
+DIAGRAMS_DIR = r"d:\personal-finance\docs\diagrams"
+
 def set_cell_background(cell, fill_hex):
     tcPr = cell._tc.get_or_add_tcPr()
     shd = parse_xml(f'<w:shd {nsdecls("w")} w:fill="{fill_hex}"/>')
@@ -56,6 +58,26 @@ def add_body_p(doc, text, bold_prefix="", italic=False, space_after=4):
     r_body.font.size = Pt(12)
     r_body.italic = italic
     return p
+
+def add_diagram(doc, img_name, caption):
+    img_path = os.path.join(DIAGRAMS_DIR, img_name)
+    if os.path.exists(img_path):
+        p_img = doc.add_paragraph()
+        p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_img.paragraph_format.space_before = Pt(8)
+        p_img.paragraph_format.space_after = Pt(4)
+        run = p_img.add_run()
+        run.add_picture(img_path, width=Inches(6.2))
+
+        p_cap = doc.add_paragraph()
+        p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_cap.paragraph_format.space_after = Pt(10)
+        r_cap = p_cap.add_run(caption)
+        r_cap.font.name = 'Times New Roman'
+        r_cap.font.size = Pt(10.5)
+        r_cap.font.italic = True
+        r_cap.font.bold = True
+        r_cap.font.color.rgb = RGBColor(50, 50, 50)
 
 def add_code_box(doc, code_text):
     p = doc.add_paragraph()
@@ -168,17 +190,18 @@ def build_docx(output_path):
         "  1.1 Bối cảnh thực tế & Tính cấp thiết",
         "  1.2 Mục tiêu của dự án (Mục tiêu tổng quát & Mục tiêu cụ thể)",
         "  1.3 Phạm vi của dự án (Chức năng In/Out-Scope, Đối tượng, Công nghệ, Thời gian)",
-        "  1.4 Sơ đồ phân rã chức năng nghiệp vụ (BFD - Business Function Diagram)",
+        "  1.4 Sơ đồ phân rã chức năng nghiệp vụ (BFD - Hình 1.1)",
         "  1.5 Bảng so sánh chức năng Quản lý (TPS) vs Hỗ trợ ra quyết định (DSS)",
-        "  1.6 Sơ đồ Use Case tổng quát và kịch bản tương tác người dùng",
+        "  1.6 Sơ đồ Use Case tổng thể hệ thống (UCD - Hình 1.2) & Kịch bản tương tác",
         "CHƯƠNG 2: THIẾT KẾ LƯU ĐỒ QUY TRÌNH HỖ TRỢ RA QUYẾT ĐỊNH (FLOWCHARTS - YÊU CẦU 3)",
-        "  2.1 Quy trình Đánh giá sức khỏe tài chính & Khẩu vị rủi ro (Mô hình phạt lỗi)",
-        "  2.2 Quy trình Quét & Phát hiện chi tiêu bất thường (Anomaly Detection)",
-        "  2.3 Quy trình Dự báo dòng tiền tương lai (Time-Series Cashflow Forecasting)",
-        "  2.4 Quy trình Mô phỏng kịch bản What-If & Duyệt quyết định 1-Click",
-        "  2.5 Quy trình Trợ lý ảo AI Copilot tương tác chuyên sâu qua kỹ thuật RAG",
+        "  2.1 Sơ đồ hoạt động tổng thể của toàn dự án (Overall Activity Workflow - Hình 2.1)",
+        "  2.2 Quy trình Đánh giá sức khỏe tài chính & Khẩu vị rủi ro (Mô hình phạt lỗi)",
+        "  2.3 Quy trình Quét & Phát hiện chi tiêu bất thường (Anomaly Detection)",
+        "  2.4 Quy trình Dự báo dòng tiền tương lai (Time-Series Cashflow Forecasting)",
+        "  2.5 Quy trình Mô phỏng kịch bản What-If & Duyệt quyết định 1-Click",
+        "  2.6 Quy trình Trợ lý ảo AI Copilot tương tác chuyên sâu qua kỹ thuật RAG",
         "CHƯƠNG 3: THIẾT KẾ CƠ SỞ DỮ LIỆU & TRÍCH XUẤT SQL (YÊU CẦU 4 & 6)",
-        "  3.1 Mô hình quan hệ thực thể (ERD 17 bảng trong MySQL 8.0)",
+        "  3.1 Sơ đồ quan hệ thực thể (ERD 17 bảng trong MySQL 8.0 - Hình 3.1)",
         "  3.2 Từ điển dữ liệu chi tiết (Data Dictionary)",
         "  3.3 Các câu lệnh SQL đặc trưng phục vụ phân tích dữ liệu đa chiều",
         "  3.4 Cơ chế tự động khởi tạo CSDL & Schema khi triển khai sang máy mới (Zero-Config)",
@@ -188,7 +211,7 @@ def build_docx(output_path):
         "  4.3 Trợ lý AI Copilot Chatbot nổi toàn cục (Floating AI Widget)",
         "  4.4 Thiết kế 4 mẫu Báo cáo tài chính định kỳ & Chức năng xuất dữ liệu CSV",
         "CHƯƠNG 5: HIỆN THỰC HÓA MÃ NGUỒN, TÍCH HỢP AI & ĐÓNG GÓI (+ AI BONUS)",
-        "  5.1 Kiến trúc công nghệ kết hợp (Electron 34 + React 19 + TypeScript + MySQL 8.0)",
+        "  5.1 Sơ đồ kiến trúc tổng thể hệ thống (System Architecture - Hình 5.1)",
         "  5.2 Động cơ suy luận Trí tuệ Nhân tạo (Gemini API & Kỹ thuật RAG Finance)",
         "  5.3 Quy trình kiểm thử & Tự động hóa tích hợp liên tục (CI/CD GitHub Actions)",
         "  5.4 Đóng gói bộ cài đặt độc lập Windows (.exe Installer)",
@@ -224,6 +247,7 @@ def build_docx(output_path):
         ("TPS / MIS", "Transaction Processing System / Management Information System - Hệ thống xử lý giao dịch / Hệ thống thông tin quản lý."),
         ("AI-FDSS", "Personal Financial Decision Support System by AI - Tên đề tài hệ thống."),
         ("BFD", "Business Function Diagram - Sơ đồ phân rã chức năng nghiệp vụ."),
+        ("UCD", "Use Case Diagram - Sơ đồ trường hợp sử dụng tổng thể."),
         ("ERD", "Entity Relationship Diagram - Sơ đồ quan hệ thực thể cơ sở dữ liệu."),
         ("RAG", "Retrieval-Augmented Generation - Kỹ thuật tăng cường truy xuất dữ liệu ngữ cảnh cho mô hình ngôn ngữ lớn (LLM)."),
         ("What-If Analysis", "Phân tích mô phỏng kịch bản giả định để đánh giá tính khả thi trước khi chi tiêu lớn."),
@@ -260,12 +284,7 @@ def build_docx(output_path):
     add_body_p(doc, "1.2.2 Mục tiêu cụ thể (Specific Objectives):", bold_prefix="b) ")
     objectives = [
         "Mục tiêu 1 (Chuẩn hóa nghiệp vụ TPS): Xây dựng đầy đủ các chức năng quản lý tài chính nền tảng bao gồm quản lý đa ví tiền, danh mục thu/chi đa cấp, ghi chép giao dịch, lập lịch định kỳ, giám sát ngân sách và sổ nợ 2 chiều.",
-        "Mục tiêu 2 (Hiện thực hóa các bài toán DSS cốt lõi): Thiết kế và cài đặt thành công 5 năng lực hỗ trợ ra quyết định thông minh:",
-        "   • Đánh giá Điểm sức khỏe tài chính & Khẩu vị rủi ro với mô hình trừ điểm vi phạm (thang 10 - 100).",
-        "   • Tự động quét và phát hiện giao dịch chi tiêu bất thường (Anomaly Detection) vượt ngưỡng 2.5 lần trung bình.",
-        "   • Dự báo dòng tiền tương lai 3 tháng với 3 kịch bản: Tích cực, Kỳ vọng và Thận trọng (Time-Series).",
-        "   • Mô phỏng kịch bản giả định What-If đối soát khả năng thanh toán trước các quyết định mua sắm lớn / trả góp.",
-        "   • Trợ lý ảo cố vấn tài chính AI Copilot tương tác tự nhiên theo ngữ cảnh dữ liệu thực tế (kỹ thuật RAG).",
+        "Mục tiêu 2 (Hiện thực hóa các bài toán DSS cốt lõi): Thiết kế và cài đặt thành công 5 năng lực hỗ trợ ra quyết định thông minh: Đánh giá sức khỏe tài chính (thang điểm 10-100), Quét chi tiêu bất thường (>2.5x trung bình), Dự báo dòng tiền 3 tháng (Time-Series), Mô phỏng What-If mua sắm tài sản lớn, Trợ lý AI Copilot tương tác tự nhiên (RAG).",
         "Mục tiêu 3 (Trực quan hóa dữ liệu & Báo cáo): Thiết kế bảng điều khiển Dashboard chỉ huy hỗ trợ ra quyết định trong 3 giây; tích hợp hệ thống biểu đồ trực quan (Recharts) và chức năng xuất báo cáo định dạng CSV.",
         "Mục tiêu 4 (Tự động hóa & Khả năng triển khai độc lập): Tích hợp cơ chế Zero-Config tự động khởi tạo CSDL MySQL 17 bảng khi chạy ở máy mới; thiết lập quy trình kiểm thử tự động CI/CD trên GitHub Actions và đóng gói file cài đặt (.exe Installer) hoàn chỉnh."
     ]
@@ -306,39 +325,10 @@ def build_docx(output_path):
     add_body_p(doc, "Dự án được thực hiện nghiêm ngặt trong 10 tuần, bắt đầu từ ngày 03/10/2026 và kết thúc, nghiệm thu báo cáo vào ngày 12/12/2026, tuân thủ mô hình phát triển phần mềm lặp Agile/Scrum gồm 5 Sprint (mỗi Sprint 2 tuần).")
 
     add_styled_heading(doc, "1.4 Sơ Đồ Phân Rã Chức Năng Nghiệp Vụ (BFD chuẩn 6 Module)", level=2)
-    add_body_p(doc, "Hệ thống được thiết kế theo cấu trúc phân rã chuẩn gồm 6 Module nghiệp vụ chính:")
+    add_body_p(doc, "Hệ thống được thiết kế theo cấu trúc phân rã chuẩn gồm 6 Module nghiệp vụ chính. Sơ đồ hình cây BFD dưới đây minh họa toàn bộ các chức năng từ cấp hệ thống (0.0) xuống các chức năng con chi tiết:")
     
-    bfd_text = (
-        "0.0 HỆ THỐNG HỖ TRỢ RA QUYẾT ĐỊNH TÀI CHÍNH CÁ NHÂN (AI-FDSS)\n"
-        "├── 1.0 Quản lý Thu Chi & Dòng tiền\n"
-        "│   ├── 1.1 Quản lý danh sách ví & tài khoản ngân hàng\n"
-        "│   ├── 1.2 Quản lý danh mục thu/chi đa cấp\n"
-        "│   ├── 1.3 Ghi chép và truy vấn lịch sử giao dịch\n"
-        "│   └── 1.4 Lên lịch giao dịch tự động định kỳ\n"
-        "├── 2.0 Quản lý Ngân sách & Tiết kiệm\n"
-        "│   ├── 2.1 Thiết lập định mức ngân sách hàng tháng\n"
-        "│   ├── 2.2 Giám sát tiến độ giải ngân & cảnh báo vượt ngưỡng\n"
-        "│   └── 2.3 Quản lý mục tiêu tích lũy tài chính\n"
-        "├── 3.0 Quản lý Sổ Công nợ Cá nhân\n"
-        "│   ├── 3.1 Theo dõi nợ 2 chiều (Tôi nợ người khác / Người khác nợ tôi)\n"
-        "│   ├── 3.2 Ghi nhận các đợt thanh toán nợ từng phần\n"
-        "│   └── 3.3 Nhắc nhở nợ đến hạn và tính toán nợ xấu\n"
-        "├── 4.0 Báo cáo & Phân tích Trực quan\n"
-        "│   ├── 4.1 Bảng điều khiển tổng quan KPI Dashboard\n"
-        "│   ├── 4.2 Biểu đồ cơ cấu danh mục chi tiêu & xu hướng thu chi\n"
-        "│   └── 4.3 Trích xuất báo cáo dữ liệu định dạng CSV\n"
-        "├── 5.0 Hỗ trợ Ra quyết định bằng AI (TRỌNG TÂM DSS)\n"
-        "│   ├── 5.1 Đánh giá Điểm sức khỏe tài chính & Khẩu vị rủi ro\n"
-        "│   ├── 5.2 Tự động quét và phát hiện chi tiêu bất thường\n"
-        "│   ├── 5.3 Dự báo dòng tiền tương lai 3 tháng (Time-Series)\n"
-        "│   ├── 5.4 Mô phỏng kịch bản What-If mua sắm tài sản lớn\n"
-        "│   ├── 5.5 Đưa ra khuyến nghị can thiệp & Phê duyệt 1-Click\n"
-        "│   └── 5.6 Trợ lý ảo cố vấn tài chính AI Copilot (RAG)\n"
-        "└── 6.0 Cài đặt & Tiện ích Quản trị\n"
-        "    ├── 6.1 Tùy chọn mô hình AI (Gemini 2.5 Flash / Flash Latest)\n"
-        "    └── 6.2 Kiểm tra kết nối CSDL và sao lưu dữ liệu"
-    )
-    add_code_box(doc, bfd_text)
+    # Embed BFD Diagram Image
+    add_diagram(doc, "2_bfd_diagram.png", "Hình 1.1: Sơ đồ phân rã chức năng nghiệp vụ (BFD - Business Function Diagram)")
 
     add_styled_heading(doc, "1.5 Bảng Phân Biệt Giữa Chức Năng Quản Lý (TPS) và Chức Năng Hỗ Trợ Ra Quyết Định (DSS)", level=2)
     add_body_p(doc, "Bảng dưới đây chứng minh rõ nét sự khác biệt giữa các chức năng nhập liệu đơn thuần và các chức năng DSS thực thụ của đồ án:")
@@ -370,11 +360,25 @@ def build_docx(output_path):
             if idx == 0:
                 r.bold = True
 
+    add_styled_heading(doc, "1.6 Sơ Đồ Use Case Tổng Thể Hệ Thống (UCD) & Kịch Bản Tương Tác", level=2)
+    add_body_p(doc, "Sơ đồ Use Case tổng thể xác định ranh giới hệ thống, các tác nhân (Actors) và các trường hợp sử dụng trọng tâm:")
+    add_body_p(doc, "• Tác nhân chính (Primary Actor): Người dùng cá nhân – người trực tiếp nhập liệu, xem báo cáo và thực hiện các quyết định tài chính.")
+    add_body_p(doc, "• Tác nhân phụ (Secondary / External System): Google Gemini AI – động cơ trí tuệ nhân tạo bên ngoài đóng vai trò xử lý ngôn ngữ tự nhiên, lập luận logic và sinh kịch bản khuyến nghị.")
+    
+    # Embed UCD Diagram Image
+    add_diagram(doc, "3_ucd_diagram.png", "Hình 1.2: Sơ đồ Use Case tổng thể hệ thống (Use Case Diagram - UCD)")
+
     # ------------------ CHƯƠNG 2 ------------------
     add_styled_heading(doc, "CHƯƠNG 2: THIẾT KẾ LƯU ĐỒ QUY TRÌNH HỖ TRỢ RA QUYẾT ĐỊNH (FLOWCHARTS - YÊU CẦU 3)", level=1)
-    add_body_p(doc, "Chương này mô tả chi tiết 5 lưu đồ quy trình ra quyết định được hiện thực hóa trong mã nguồn hệ thống.")
+    add_body_p(doc, "Chương này mô tả sơ đồ hoạt động tổng thể của toàn dự án và 5 lưu đồ quy trình nghiệp vụ DSS cốt lõi.")
 
-    add_styled_heading(doc, "2.1 Lưu đồ Quy trình Đánh giá Sức khỏe Tài chính (Penalty Model)", level=2)
+    add_styled_heading(doc, "2.1 Sơ Đồ Hoạt Động Tổng Thể Của Toàn Dự Án (Overall Activity Workflow)", level=2)
+    add_body_p(doc, "Sơ đồ hoạt động dưới đây mô tả trọn vẹn chu trình vận hành từ lúc người dùng khởi động ứng dụng, cơ chế tự động kiểm tra CSDL (Zero-Config), tải dữ liệu lên Dashboard, phân luồng xử lý song song các tác vụ TPS & DSS, cho đến khi vấn đáp cùng Trợ lý ảo AI Copilot:")
+    
+    # Embed Overall Activity Diagram Image
+    add_diagram(doc, "5_overall_activity.png", "Hình 2.1: Sơ đồ hoạt động và luồng xử lý tổng thể của toàn dự án (Overall Activity Diagram)")
+
+    add_styled_heading(doc, "2.2 Lưu Đồ Quy Trình Đánh Giá Sức Khỏe Tài Chính (Penalty Model)", level=2)
     add_body_p(doc, "Thuật toán đánh giá sức khỏe tài chính dựa trên mô hình trừ điểm vi phạm với điểm chuẩn tuyệt đối là 100 điểm:")
     steps_health = [
         "Bước 1: Trích xuất các chỉ số tài chính hiện hành từ CSDL: Tổng tài sản các ví, Thu nhập tháng, Chi tiêu tháng, Tổng dư nợ, Tình trạng nợ quá hạn.",
@@ -390,7 +394,7 @@ def build_docx(output_path):
     for s in steps_health:
         add_body_p(doc, s, space_after=3)
 
-    add_styled_heading(doc, "2.2 Lưu đồ Quy trình Phát hiện Chi tiêu Bất thường (Anomaly Detection)", level=2)
+    add_styled_heading(doc, "2.3 Lưu Đồ Quy Trình Phát Hiện Chi Tiêu Bất Thường (Anomaly Detection)", level=2)
     add_body_p(doc, "Hệ thống hỗ trợ quét và phát hiện các khoản chi đột biến theo lưu đồ sau:")
     steps_anomaly = [
         "Bước 1: Khi người dùng bấm 'Quét chi tiêu lạ' trên Dashboard hoặc kích hoạt tự động theo định kỳ.",
@@ -403,7 +407,7 @@ def build_docx(output_path):
     for s in steps_anomaly:
         add_body_p(doc, s, space_after=3)
 
-    add_styled_heading(doc, "2.3 Lưu đồ Quy trình Mô phỏng Kịch bản What-If & Duyệt Quyết định 1-Click", level=2)
+    add_styled_heading(doc, "2.4 Lưu Đồ Quy Trình Mô Phỏng Kịch Bản What-If & Duyệt Quyết Định 1-Click", level=2)
     steps_whatif = [
         "Bước 1: Người dùng truy cập trang 'Dự báo & Mô phỏng' (`/forecast-scenarios`) và nhập thông số bài toán What-If: Tên món đồ, Giá trị dự kiến, Số tiền trả trước, Chi phí phát sinh/trả góp hàng tháng, Thời gian trả góp.",
         "Bước 2: Hệ thống trích xuất dòng tiền thực tế hiện có (Số dư ví khả dụng, Thặng dư dòng tiền hàng tháng).",
@@ -417,9 +421,15 @@ def build_docx(output_path):
 
     # ------------------ CHƯƠNG 3 ------------------
     add_styled_heading(doc, "CHƯƠNG 3: THIẾT KẾ CƠ SỞ DỮ LIỆU & TRÍCH XUẤT SQL (YÊU CẦU 4 & 6)", level=1)
-    add_body_p(doc, "Hệ thống triển khai Cơ sở dữ liệu quan hệ MySQL 8.0 với 17 bảng được chuẩn hóa, chia thành 2 phân hệ rõ rệt:")
+    add_body_p(doc, "Hệ thống triển khai Cơ sở dữ liệu quan hệ MySQL 8.0 với 17 bảng được chuẩn hóa 3NF, chia thành 2 phân hệ rõ rệt:")
 
-    add_styled_heading(doc, "3.1 Bảng Danh Mục 17 Bảng Dữ Liệu Trong Hệ Thống", level=2)
+    add_styled_heading(doc, "3.1 Sơ Đồ Quan Hệ Thực Thể (ERD 17 Bảng CSDL MySQL 8.0)", level=2)
+    add_body_p(doc, "Sơ đồ thực thể liên kết ERD dưới đây mô tả chi tiết quan hệ giữa 9 bảng thuộc phân hệ Nghiệp vụ Tài chính Core (xanh dương) và 8 bảng thuộc phân hệ Hỗ trợ ra quyết định & AI Engine (tím):")
+
+    # Embed ERD Diagram Image
+    add_diagram(doc, "4_erd_diagram.png", "Hình 3.1: Sơ đồ quan hệ thực thể (ERD 17 bảng trong MySQL 8.0 chuẩn 3NF)")
+
+    add_styled_heading(doc, "3.2 Bảng Danh Mục 17 Bảng Dữ Liệu Trong Hệ Thống", level=2)
     
     t_tbl = doc.add_table(rows=1, cols=4)
     t_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -461,7 +471,7 @@ def build_docx(output_path):
             if idx == 1:
                 r.bold = True
 
-    add_styled_heading(doc, "3.2 Các Câu Lệnh SQL Đặc Trưng Phục Vụ Hỗ Trợ Ra Quyết Định (Yêu cầu 6)", level=2)
+    add_styled_heading(doc, "3.3 Các Câu Lệnh SQL Đặc Trưng Phục Vụ Hỗ Trợ Ra Quyết Định (Yêu cầu 6)", level=2)
     add_body_p(doc, "Hệ thống sử dụng các câu truy vấn SQL nâng cao với các hàm tổng hợp và điều kiện phức tạp để phục vụ suy luận ra quyết định:")
 
     sql1 = (
@@ -512,7 +522,7 @@ def build_docx(output_path):
     )
     add_code_box(doc, sql3)
 
-    add_styled_heading(doc, "3.3 Tính Năng Tự Động Khởi Tạo CSDL Khi Sang Máy Mới (Zero-Config)", level=2)
+    add_styled_heading(doc, "3.4 Tính Năng Tự Động Khởi Tạo CSDL Khi Sang Máy Mới (Zero-Config)", level=2)
     add_body_p(doc, "Để phục vụ chấm thi và triển khai thuận tiện trên bất kỳ máy tính nào của giảng viên mà không cần thao tác import SQL thủ công qua Navicat/phpMyAdmin:")
     add_body_p(doc, "Hệ thống đã tích hợp sẵn module `ensureDatabaseInitialized()` trong `backend/electron/database/connection.ts` và bộ DDL `init_schema.ts`. Khi khởi động ứng dụng lần đầu, hệ thống tự động kết nối MySQL Server trên cổng 3306, tự tạo Database `personal_finance` và tự sinh toàn bộ 17 bảng kèm dữ liệu danh mục mẫu hoàn toàn tự động.")
 
@@ -543,19 +553,21 @@ def build_docx(output_path):
     # ------------------ CHƯƠNG 5 ------------------
     add_styled_heading(doc, "CHƯƠNG 5: HIỆN THỰC HÓA MÃ NGUỒN, TÍCH HỢP AI & ĐÓNG GÓI (+ AI BONUS)", level=1)
     
-    add_styled_heading(doc, "5.1 Ngăn Xếp Công Nghệ (Technology Stack)", level=2)
-    add_body_p(doc, "• Khung ứng dụng Desktop: Electron v34.3.0.")
-    add_body_p(doc, "• Frontend: React 19, TypeScript, Tailwind CSS, Lucide React Icons, Recharts.")
-    add_body_p(doc, "• Backend & CSDL: Node.js, Electron IPC, MySQL 8.0 với thư viện `mysql2/promise`.")
-    add_body_p(doc, "• Trí tuệ Nhân tạo: Google Gemini API (Gemini 2.5 Flash / Flash Latest).")
-    add_body_p(doc, "• Cơ chế bảo mật: API Key được quản lý an toàn qua IPC backend, không để lộ trên UI của người dùng.")
+    add_styled_heading(doc, "5.1 Sơ Đồ Kiến Trúc Tổng Thể Hệ Thống (System Architecture)", level=2)
+    add_body_p(doc, "Hệ thống được thiết kế theo kiến trúc 3 tầng (3-Tier Desktop Hybrid Architecture) đảm bảo tính mở rộng, hiệu năng cao và phân tách rõ ràng trách nhiệm:")
+    add_body_p(doc, "• Tầng Giao diện Người dùng (Presentation Layer): Xây dựng bằng React 19, Vite và Tailwind CSS, tích hợp biểu đồ Recharts và các components tương tác.")
+    add_body_p(doc, "• Tầng Điều hành & Nghiệp vụ (Application & Logic Layer): Chạy trên Node.js và Electron Main Process, xử lý IPC routing bảo mật, thuật toán chấm điểm DSS và bộ lọc Anomaly Scanner.")
+    add_body_p(doc, "• Tầng Dữ liệu & Động cơ AI (Data & AI Layer): CSDL MySQL Server 8.0 cục bộ lưu trữ an toàn kết hợp Google Gemini AI Cloud API qua kỹ thuật RAG.")
+
+    # Embed Architecture Diagram Image
+    add_diagram(doc, "1_system_architecture.png", "Hình 5.1: Sơ đồ kiến trúc 3 tầng tổng thể của hệ thống AI-FDSS")
 
     add_styled_heading(doc, "5.2 Đóng Gói Cài Đặt Windows & Tự Động Hóa CI/CD", level=2)
     add_body_p(doc, "• CI/CD Pipeline: Dự án thiết lập quy trình tích hợp liên tục tự động trên GitHub Actions (`.github/workflows/ci.yml`) để tự động kiểm tra cú pháp, biên dịch TypeScript và chạy Unit Test trước khi hợp nhất mã nguồn.")
     add_body_p(doc, "• Đóng gói Installer: Ứng dụng được biên dịch và đóng gói hoàn chỉnh thành file cài đặt độc lập cho Windows: `release/Personal Finance Setup 3.0.0.exe` thông qua `electron-builder`.")
 
     # ------------------ CHƯƠNG 6 ------------------
-    add_styled_heading(doc, "CHƯƠNG 6: KẾ HOẠCH TRIỂN KHAI SPRINT & PHÂN CÔNG 5 THÀNH VIÊN", level=1)
+    add_styled_heading(doc, "CHƯƠNG 6: QUẢN LÝ DỰ ÁN THEO PHƯƠNG PHÁP LUẬN AGILE/SCRUM", level=1)
     add_body_p(doc, "Dự án được triển khai trong thời gian 10 tuần (từ 03/10/2026 đến 12/12/2026), chia làm 5 Sprint theo mô hình Agile/Scrum chuẩn quốc tế:")
 
     t_sprint = doc.add_table(rows=1, cols=4)

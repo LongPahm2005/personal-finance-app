@@ -135,7 +135,10 @@ Dự án được thực hiện trong đúng 10 tuần, từ ngày **03/10/2026*
 
 ---
 
-### 1.3 Cây phân rã chức năng nghiệp vụ (BFD chuẩn 6 Module)
+### 1.4 Sơ đồ phân rã chức năng nghiệp vụ (BFD chuẩn 6 Module)
+
+![Hình 1.1: Sơ đồ phân rã chức năng nghiệp vụ (BFD)](diagrams/2_bfd_diagram.png)
+
 Hệ thống được thiết kế theo mô hình Ứng dụng Desktop Cá nhân (Single-User Desktop Privacy-First), phân rã thành 6 module nghiệp vụ ngắn gọn:
 
 ```
@@ -176,7 +179,7 @@ Hệ thống được thiết kế theo mô hình Ứng dụng Desktop Cá nhân
     └── 6.3 Kiểm tra kết nối cơ sở dữ liệu
 ```
 
-### 1.2 Bảng so sánh chức năng Quản lý vận hành vs Chức năng Hỗ trợ ra quyết định (DSS)
+### 1.5 Bảng so sánh chức năng Quản lý vận hành (TPS) vs Hỗ trợ ra quyết định (DSS)
 
 | Phân loại | Chức năng tiêu biểu | Đầu vào (Input) | Xử lý | Đầu ra (Output) |
 | :--- | :--- | :--- | :--- | :--- |
@@ -188,7 +191,21 @@ Hệ thống được thiết kế theo mô hình Ứng dụng Desktop Cá nhân
 
 ---
 
+### 1.6 Sơ đồ Use Case tổng thể hệ thống (UCD) & Ranh giới tương tác
+
+![Hình 1.2: Sơ đồ Use Case tổng thể hệ thống (UCD)](diagrams/3_ucd_diagram.png)
+
+* **Tác nhân chính (Primary Actor):** Người dùng cá nhân thực hiện các thao tác quản lý thu chi, ngân sách, sổ nợ và tra cứu khuyến nghị.
+* **Tác nhân phụ / Hệ thống ngoài (Secondary Actor / External Engine):** Google Gemini AI tiếp nhận ngữ cảnh thực tế (RAG Context) để suy luận giải pháp và sinh phản hồi tự nhiên.
+
+---
+
 ## CHƯƠNG 2: THIẾT KẾ QUY TRÌNH HỖ TRỢ RA QUYẾT ĐỊNH (FLOWCHARTS - YÊU CẦU 3)
+
+### 2.1 Sơ đồ Hoạt động Tổng thể Của Toàn Dự Án (Overall Activity Workflow)
+
+![Hình 2.1: Sơ đồ hoạt động và luồng xử lý tổng thể của toàn dự án](diagrams/5_overall_activity.png)
+
 
 ### 2.1 Lưu đồ Quy trình Đánh giá Sức khỏe Tài chính (Mô hình Trừ điểm vi phạm - Penalty Model)
 
@@ -266,7 +283,10 @@ flowchart TD
 
 ## CHƯƠNG 3: THIẾT KẾ CƠ SỞ DỮ LIỆU & TRÍCH XUẤT SQL (YÊU CẦU 4 & 6)
 
-### 3.1 Sơ đồ Quan hệ Thực thể (ERD 17 Bảng)
+### 3.1 Sơ đồ Quan hệ Thực thể (ERD 17 Bảng CSDL MySQL 8.0)
+
+![Hình 3.1: Sơ đồ quan hệ thực thể (ERD 17 bảng trong MySQL 8.0)](diagrams/4_erd_diagram.png)
+
 Cơ sở dữ liệu được thiết kế chuẩn hóa bậc 3 (3NF), chia thành 2 phân hệ rõ ràng:
 
 ```mermaid
@@ -392,7 +412,10 @@ Tách biệt trên thanh điều hướng menu với đường dẫn `/forecast-
 
 ## CHƯƠNG 5: HIỆN THỰC HÓA MÃ NGUỒN, TÍCH HỢP AI & ĐÓNG GÓI (+ AI BONUS)
 
-### 5.1 Kiến trúc Công nghệ Tổng thể
+### 5.1 Sơ đồ Kiến trúc Tổng thể Hệ thống (System Architecture)
+
+![Hình 5.1: Sơ đồ kiến trúc 3 tầng tổng thể của hệ thống AI-FDSS](diagrams/1_system_architecture.png)
+
 * **Desktop Runtime:** Electron v35 – Chạy trực tiếp native trên Windows.
 * **Frontend:** React 19 + TypeScript + Vite 7 – Component-Driven, Hot Module Replacement.
 * **Backend:** Node.js + Electron IPC – Xử lý các phép toán tài chính, kết nối MySQL Connection Pool (`mysql2/promise`).
