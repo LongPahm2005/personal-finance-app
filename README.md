@@ -1,132 +1,151 @@
-# Personal Finance
+# HỆ THỐNG HỖ TRỢ RA QUYẾT ĐỊNH TÀI CHÍNH CÁ NHÂN BẰNG AI (AI-FDSS)
 
-Ứng dụng desktop quản lý tài chính cá nhân, xây dựng bằng Electron, React, TypeScript, Vite và SQLite. Phiên bản hiện tại: **2.0.0**.
+> **Personal Financial Decision Support System — Desktop Application**  
+> Phiên bản: **v3.0.0 (AI-Powered Edition)** | Nền tảng: **Windows Desktop (Electron + React + MySQL + Google Gemini AI)**
 
-Ứng dụng lưu dữ liệu cục bộ trên máy Windows. Không cần cài hoặc chạy MySQL Server; database của mỗi tài khoản Windows là riêng.
+---
 
-## Cài đặt ứng dụng trên Windows
+## 🌟 GIỚI THIỆU TỔNG QUAN
 
-1. Nhận file cài đặt `Personal Finance Setup 2.0.0.exe` từ người chia sẻ dự án.
-2. Mở file cài đặt, chọn thư mục cài nếu cần rồi hoàn tất các bước hướng dẫn.
-3. Mở **Personal Finance** từ Start Menu hoặc shortcut trên Desktop.
-4. Ở lần chạy đầu, ứng dụng tự tạo database SQLite và các danh mục mặc định.
+**AI-FDSS** là ứng dụng máy tính (Desktop App) hỗ trợ người dùng theo dõi và quản lý toàn diện dòng tiền cá nhân, kết hợp cùng **Trí tuệ nhân tạo (Generative AI & Phân tích chuỗi thời gian Time-Series)** nhằm đóng vai trò như một **Chuyên gia Cố vấn Tài chính Cá nhân**.
 
-Ứng dụng không đóng gói dữ liệu cá nhân của người tạo bộ cài. Mỗi người dùng sẽ có database riêng trên máy của mình. Nếu Windows hiện cảnh báo ứng dụng chưa xác định nhà phát hành, đó là do bộ cài chưa được ký số; chỉ tiếp tục nếu bạn tin cậy nguồn nhận file.
+Khác với các ứng dụng ghi chép thu chi thụ động truyền thống, AI-FDSS chủ động phân tích cơ cấu chi tiêu thực tế, dự báo biến động dòng tiền trong tương lai, mô phỏng các kịch bản mua sắm lớn (What-If), cảnh báo chi tiêu bất thường và đưa ra các **khuyến nghị quyết định hành động áp dụng tự động chỉ với 1 cú nhấp chuột (1-Click Apply)**.
 
-## Dữ liệu và quyền riêng tư
+---
 
-Database nằm tại:
+## 🚀 CÁC TÍNH NĂNG NỔI BẬT
+
+### 1. Trọng tâm AI Ra quyết định (Decision Support System)
+* **Khuyến nghị Quyết định 1-Click (Dashboard):** AI tự động phân tích dữ liệu thu chi thực tế, đưa ra giải pháp cụ thể (cắt giảm chi tiêu danh mục nào, bổ sung quỹ khẩn cấp bao nhiêu) và cho phép người dùng phê duyệt áp dụng ngay.
+* **Cảnh báo Chi tiêu Bất thường (Anomaly Detection):** Tự động rà soát và phát hiện các khoản chi tăng đột biến gấp nhiều lần mức chi tiêu trung bình để ngăn chặn rò rỉ dòng tiền.
+* **Đánh giá Sức khỏe Tài chính (Thang 100 điểm):** Vận hành theo mô hình trừ điểm vi phạm (Penalty Model), khởi đầu **100/100 (Hoàn hảo - Sạch nợ)** và chỉ giảm điểm khi phát sinh vi phạm tài chính (chi vượt thu, nợ quá hạn, vỡ trần ngân sách).
+* **Dự báo Dòng tiền Tương lai (Time-Series Forecasting):** Dự toán số dư ví, thu nhập và chi phí trong 3 tháng tới kèm 3 kịch bản: Tích cực, Thận trọng và Dự kiến.
+* **Mô phỏng Kịch bản Giả định (What-If Analysis):** Thử nghiệm trước các quyết định mua sắm tài sản lớn hoặc trả góp (mua xe, mua điện thoại, đầu tư) để AI đánh giá độ an toàn dòng tiền trước khi bạn xuống tiền.
+* **Trợ lý Ảo AI Copilot (Chatbot Nổi Toàn Cục):** Luôn thường trực ở góc màn hình. Ứng dụng kỹ thuật RAG Finance để truy vấn số liệu thực tế trong database và giải đáp mọi băn khoăn tài chính cá nhân bằng tiếng Việt tự nhiên.
+
+### 2. Nghiệp vụ Quản lý Dòng tiền Cốt lõi
+* **Quản lý Đa Ví & Tài khoản:** Theo dõi tập trung Tiền mặt, Tài khoản Ngân hàng (Vietcombank, MB Bank...), Ví điện tử (MoMo, ZaloPay).
+* **Ghi chép Giao dịch Thu - Chi:** Thao tác thêm nhanh trong 3 giây, tự động khấu trừ/cộng dồn số dư ví tức thời.
+* **Ngân sách & Cảnh báo Vi phạm:** Đặt trần chi tiêu theo từng nhóm danh mục, cảnh báo màu sắc trực quan khi chạm ngưỡng 80% hoặc vượt trần 100%.
+* **Quản lý Công nợ 2 Chiều:** Quản lý sổ nợ Cho vay (Phải thu) và Vay nợ (Phải trả), ghi nhận trả nợ theo từng đợt và nhắc nợ quá hạn.
+* **Mục tiêu Tiết kiệm Tích lũy:** Theo dõi tiến độ tích lũy tài sản cho các dự định tương lai.
+* **Giao dịch Định kỳ Tự động:** Tự động hóa các khoản chi phí cố định (Tiền nhà, Internet, Lương tháng).
+* **Báo cáo & Thống kê Trực quan:** Biểu đồ dòng tiền Thu - Chi và biểu đồ tròn phân bổ chi tiêu bằng Recharts, hỗ trợ xuất file CSV.
+
+---
+
+## 🛠️ CÔNG NGHỆ SỬ DỤNG
+
+| Tầng hệ thống | Công nghệ / Thư viện | Vai trò |
+| :--- | :--- | :--- |
+| **Desktop Shell** | Electron v35 | Đóng gói ứng dụng desktop native cho Windows |
+| **Giao diện (Frontend)** | React 19, TypeScript, Vite 7 | Giao diện người dùng mượt mà, chuẩn component-driven |
+| **Biểu đồ & Icon** | Recharts, Lucide React | Trực quan hóa dữ liệu tài chính chuyên nghiệp |
+| **Backend & IPC** | Node.js, Electron IPC, TypeScript | Xử lý logic nghiệp vụ, tính toán dòng tiền, IPC Bridge |
+| **Cơ sở dữ liệu** | MySQL 8.0 (`mysql2/promise`) | 17 bảng dữ liệu chuẩn hóa, ACID, quan hệ chặt chẽ |
+| **Mô hình Trí tuệ Nhân tạo**| Google Gemini API (`@google/generative-ai`) | Động cơ sinh quyết định, mô phỏng What-If và Chatbot RAG |
+
+---
+
+## 📂 CẤU TRÚC THƯ MỤC DỰ ÁN
 
 ```text
-%APPDATA%\Personal Finance\personal_finance.sqlite
+personal-finance/
+├── backend/
+│   ├── dist-electron/             # Mã nguồn Electron sau khi biên dịch
+│   └── electron/
+│       ├── database/              # Kết nối MySQL & Types (connection.ts)
+│       ├── ipc/                   # IPC Handlers (AI, Ví, Giao dịch, Ngân sách, Nợ...)
+│       ├── services/              # Logic dịch vụ (ai.service.ts, report.service.ts...)
+│       ├── main.ts                # Tiến trình chính Electron Main Process
+│       └── preload.ts             # Context Bridge an toàn kết nối Frontend - Backend
+├── frontend/
+│   ├── src/
+│   │   ├── components/            # UI components, layout, FloatingAiChat...
+│   │   ├── pages/
+│   │   │   ├── Dashboard/         # Trung tâm điều hành & Khuyến nghị / Cảnh báo AI
+│   │   │   ├── ForecastScenarios/ # Module riêng Dự báo & Mô phỏng kịch bản What-If
+│   │   │   ├── Income/ Expense/   # Quản lý thu chi
+│   │   │   ├── Transactions/      # Sổ giao dịch
+│   │   │   ├── Budgets/ Savings/  # Ngân sách và Mục tiêu tiết kiệm
+│   │   │   ├── Debts/             # Quản lý công nợ
+│   │   │   ├── Reports/           # Báo cáo và biểu đồ
+│   │   │   └── Settings/          # Cài đặt mô hình AI & Sao lưu database
+│   │   ├── services/api.ts        # API Client giao tiếp IPC
+│   │   └── types/                 # Định nghĩa TypeScript toàn hệ thống
+│   └── index.html
+├── docs/
+│   ├── database/                  # File script SQL MySQL đầy đủ (17 bảng)
+│   ├── diagrams/                  # Sơ đồ kiến trúc ERD, BFD xuất ra SVG/PNG
+│   └── tai-lieu-huong-dan-su-dung.md # Tài liệu hướng dẫn sử dụng chi tiết
+├── .env                           # File cấu hình môi trường bảo mật (Database, AI Key)
+└── package.json                   # Cấu hình dự án (v3.0.0)
 ```
 
-Mở thư mục này bằng PowerShell:
+---
 
-```powershell
-Start-Process explorer.exe -ArgumentList "`"$env:APPDATA\Personal Finance`""
+## ⚙️ HƯỚNG DẪN KHỞI CHẠY (DEVELOPMENT)
+
+### 1. Yêu cầu tiên quyết
+* **Hệ điều hành:** Windows 10/11
+* **Node.js:** Phiên bản `>= 20.x` hoặc `>= 22.x`
+* **MySQL Server:** Phiên bản `8.0+` (chạy trên cổng `3306`)
+
+### 2. Cấu hình Cơ sở dữ liệu & Biến môi trường
+Tạo file `.env` tại thư mục gốc của dự án với nội dung:
+
+```env
+# Cấu hình Cơ sở dữ liệu MySQL
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=mật_khẩu_mysql_của_bạn
+DB_NAME=personal_finance
+
+# Cấu hình Trí tuệ Nhân tạo Google Gemini
+AI_PROVIDER=gemini
+AI_API_KEY=khóa_google_gemini_api_key_của_bạn
+AI_MODEL=gemini-3-flash-preview
 ```
 
-Database được lưu theo tài khoản Windows. Những người dùng chung một tài khoản Windows cũng dùng chung dữ liệu ứng dụng; muốn tách dữ liệu, hãy dùng tài khoản Windows riêng.
+Khởi tạo cơ sở dữ liệu bằng cách import file SQL tại:
+`docs/database/personal_finance_mysql_ai_full.sql` vào MySQL.
 
-Database cục bộ **không được mã hóa bởi ứng dụng**. Hãy bảo vệ tài khoản Windows và không gửi file `.sqlite` cho người khác nếu không muốn chia sẻ dữ liệu tài chính.
-
-## Sử dụng ứng dụng
-
-Các mục ở thanh bên:
-
-- **Dashboard:** xem số dư, thu chi trong tháng, công nợ, tiết kiệm và các giao dịch gần đây.
-- **Thu nhập / Chi tiêu:** ghi nhận khoản thu hoặc chi, chọn ví và danh mục.
-- **Lịch sử giao dịch:** xem, tìm kiếm và lọc giao dịch theo loại hoặc khoảng ngày.
-- **Công nợ:** tạo khoản phải thu/phải trả và ghi nhận các lần thanh toán.
-- **Ngân sách:** lập hạn mức theo thời gian và danh mục, theo dõi số tiền đã dùng.
-- **Tiết kiệm:** tạo mục tiêu, cập nhật số tiền tích lũy và theo dõi tiến độ.
-- **Báo cáo:** xem xu hướng và tổng hợp thu chi.
-- **Cài đặt & Sao lưu:** kiểm tra database, xuất giao dịch CSV và tạo bản sao dữ liệu JSON.
-
-### Bắt đầu
-
-1. Mở ứng dụng và vào **Thu nhập** hoặc **Chi tiêu** để ghi nhận giao dịch đầu tiên.
-2. Chọn ví, danh mục, số tiền, ngày giao dịch và ghi chú nếu cần.
-3. Tạo ngân sách, mục tiêu tiết kiệm hoặc khoản công nợ tại các trang tương ứng.
-4. Dùng **Lịch sử giao dịch** và **Báo cáo** để tra cứu, xem tổng hợp.
-
-### Sao lưu và xuất dữ liệu
-
-- Vào **Cài đặt & Sao lưu** → **Sao lưu database** để tạo file JSON chứa dữ liệu ứng dụng. Có thể nhập một thư mục sao lưu; nếu để trống, ứng dụng lưu trong thư mục Documents của Windows.
-- Vào **Cài đặt & Sao lưu** → **Xuất CSV** để lưu danh sách giao dịch thành file CSV, có thể mở bằng Excel.
-- Nên sao lưu định kỳ và giữ bản sao ở nơi an toàn. Gỡ cài đặt ứng dụng không thay thế cho việc sao lưu database.
-- Phiên bản hiện tại chưa có nút phục hồi file JSON trong giao diện. Hãy giữ lại file sao lưu; không thay thế hoặc xóa file SQLite đang dùng nếu chưa có bản sao an toàn.
-
-## Chạy dự án ở chế độ phát triển
-
-### Yêu cầu
-
-- Windows 10/11.
-- Git for Windows nếu clone dự án.
-- Node.js **20.19 trở lên** hoặc **22.12 trở lên**, kèm npm.
-- Không cần cài MySQL hoặc SQLite riêng.
-
-Kiểm tra phiên bản:
+### 3. Cài đặt thư viện & Khởi chạy ứng dụng
+Mở terminal PowerShell tại thư mục dự án và thực hiện:
 
 ```powershell
-node --version
-npm --version
-```
+# Cài đặt các gói phụ thuộc
+npm install
 
-### Cài và chạy
-
-Clone dự án (nếu chưa có mã nguồn), cài dependencies và khởi động:
-
-```powershell
-git clone https://github.com/LongPahm2005/personal-finance-app.git
-cd personal-finance-app
-npm ci
+# Khởi chạy đồng thời Vite Frontend và Electron Backend
 npm run dev
 ```
 
-`npm run dev` chạy Vite và Electron. Đóng cửa sổ ứng dụng hoặc nhấn `Ctrl+C` trong terminal để dừng.
+---
 
-Ứng dụng tự tạo database tại `%APPDATA%\Personal Finance\personal_finance.sqlite`; không cần tạo `.env`, cài database server hay chạy file SQL để khởi động bản hiện tại.
+## 📦 ĐÓNG GÓI BỘ CÀI ĐẶT WINDOWS (.EXE)
 
-### Lệnh dành cho phát triển
+Để xuất bộ cài đặt hoàn chỉnh cho máy tính Windows:
 
 ```powershell
-npm run lint
+# Biên dịch Frontend & Backend
 npm run build
+
+# Đóng gói file cài đặt Windows Installer (.exe)
 npm run dist
 ```
+File cài đặt sau khi đóng gói sẽ nằm trong thư mục `release/` (ví dụ: `Personal Finance Setup 3.0.0.exe`).
 
-- `npm run lint`: chạy ESLint trên toàn dự án.
-- `npm run build`: build giao diện và biên dịch mã Electron.
-- `npm run dist`: tạo bộ cài Windows trong `release/`, tên file theo version trong `package.json`.
+---
 
-Nếu quá trình đóng gói báo `A required privilege is not held by the client` khi giải nén `winCodeSign`, bật **Windows Developer Mode** hoặc dùng terminal có quyền phù hợp. Có thể thử tạo NSIS installer mà không sửa tài nguyên executable bằng lệnh:
+## 📖 TÀI LIỆU HỆ THỐNG
+* **Hướng dẫn sử dụng chi tiết:** Xem tại [`docs/tai-lieu-huong-dan-su-dung.md`](file:///docs/tai-lieu-huong-dan-su-dung.md)
+* **Tài liệu thiết kế sơ đồ BFD & ERD:** Xem tại [`docs/tai-lieu-thiet-ke-he-thong-va-so-do.md`](file:///docs/tai-lieu-thiet-ke-he-thong-va-so-do.md)
 
-```powershell
-npx electron-builder --win nsis --config.win.signAndEditExecutable=false
-```
+---
 
-### Nhập snapshot SQLite cũ
-
-Chỉ dùng lệnh này khi có snapshot SQLite được xuất theo cấu trúc MySQL cũ. Công cụ chuyển đổi từ chối ghi đè database đích đã tồn tại:
-
-```powershell
-npm run migrate:legacy-sqlite -- "C:\duong-dan\personal_finance.sqlite"
-```
-
-## Xử lý sự cố
-
-- **Không thấy dữ liệu:** kiểm tra tài khoản Windows đang đăng nhập và mở đúng thư mục `%APPDATA%\Personal Finance`.
-- **Không mở/ghi được database:** kiểm tra quyền ghi vào thư mục trên và đảm bảo database không bị khóa bởi một tiến trình khác.
-- **Cổng 5173 đang được sử dụng khi chạy chế độ phát triển:** đóng tiến trình đang dùng cổng hoặc khởi động lại sau khi cổng được giải phóng.
-- **Cài dependencies hoặc build thất bại:** kiểm tra phiên bản Node.js, sau đó chạy lại `npm ci`.
-- **Cần chia sẻ dữ liệu với người khác:** dùng tính năng sao lưu và chỉ chia sẻ file JSON khi bạn thực sự muốn gửi dữ liệu trong đó. Không gửi database cá nhân kèm mã nguồn hay bộ cài.
-
-## Cấu trúc dự án
-
-- `frontend/`: giao diện React.
-- `backend/electron/`: Electron main process, preload, IPC, dịch vụ và database.
-- `backend/electron/database/schema.ts`: schema SQLite và dữ liệu khởi tạo.
-- `docs/database/`: schema MySQL cũ được giữ để tham khảo khi chuyển đổi dữ liệu.
-- `scripts/database/`: công cụ nhập snapshot SQLite theo schema cũ vào database ứng dụng.
+## 👤 TÁC GIẢ
+* **Dự án:** Hệ thống Hỗ trợ Ra Quyết định Tài chính Cá nhân bằng AI (AI-FDSS)
+* **Phiên bản:** 3.0.0
+* **Tác giả:** longpahm

@@ -184,3 +184,84 @@ export interface MonthlyCashFlow {
   expense: number;
   net: number;
 }
+
+// AI Decision Support (Module 5)
+export interface AiProfile {
+  id: number;
+  risk_tolerance: 'conservative' | 'moderate' | 'aggressive';
+  monthly_baseline_income: number;
+  emergency_fund_target_months: number;
+  financial_health_score: number;
+  financial_priorities: string[];
+  last_analyzed_at?: string;
+}
+
+export interface AiRecommendation {
+  id: number;
+  type: string;
+  title: string;
+  summary: string;
+  detailed_reasoning: string;
+  potential_savings: number;
+  action_payload: Record<string, unknown> | null;
+  status: 'pending' | 'accepted' | 'rejected' | 'dismissed';
+  confidence_score: number;
+  created_at?: string;
+  applied_at?: string;
+}
+
+export interface AiAnomaly {
+  id: number;
+  transaction_id: number | null;
+  category_id: number | null;
+  category_name?: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  anomaly_type: string;
+  description: string;
+  suggested_action: string | null;
+  is_resolved: number;
+  created_at?: string;
+}
+
+export interface AiForecast {
+  id: number;
+  forecast_period: string;
+  predicted_income: number;
+  predicted_expense: number;
+  predicted_ending_balance: number;
+  lower_bound_balance: number;
+  upper_bound_balance: number;
+  model_name: string;
+  created_at?: string;
+}
+
+export interface AiScenario {
+  id: number;
+  name: string;
+  scenario_type: string;
+  parameters: Record<string, unknown>;
+  simulation_result: Record<string, unknown>;
+  ai_evaluation: string;
+  created_at?: string;
+}
+
+export interface AiChatSession {
+  id: number;
+  title: string;
+  created_at: string;
+}
+
+export interface AiChatMessage {
+  id: number;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+export interface AiConfig {
+  id: number;
+  provider: string;
+  api_key: string;
+  model_name: string;
+  temperature: number;
+  is_active: number;
+}

@@ -14,6 +14,14 @@ import {
   TransactionFilterParams,
   MonthlyCashFlow,
   CategoryExpenseReport,
+  AiProfile,
+  AiRecommendation,
+  AiAnomaly,
+  AiForecast,
+  AiScenario,
+  AiChatSession,
+  AiChatMessage,
+  AiConfig,
 } from '../types';
 
 export const api = {
@@ -317,6 +325,93 @@ export const api = {
     getBalanceTrend: async (months?: number): Promise<ApiResponse<{ month: string; balance: number }[]>> => {
       if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
       return window.api.reports.getBalanceTrend(months) as Promise<ApiResponse<{ month: string; balance: number }[]>>;
+    },
+  },
+
+  ai: {
+    getConfig: async (): Promise<ApiResponse<AiConfig>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.getConfig() as Promise<ApiResponse<AiConfig>>;
+    },
+    saveModel: async (modelName: string): Promise<ApiResponse<void>> => {
+      if (!window.api?.ai) return { success: false, error: 'Electron API không khả dụng.' };
+      if (typeof window.api.ai.saveModel === 'function') {
+        return window.api.ai.saveModel(modelName) as Promise<ApiResponse<void>>;
+      }
+      if (typeof window.api.ai.saveConfig === 'function') {
+        return window.api.ai.saveConfig({ api_key: '', model_name: modelName }) as Promise<ApiResponse<void>>;
+      }
+      return { success: false, error: 'Vui lòng khởi động lại ứng dụng Electron để tải các hàm AI mới nhất.' };
+    },
+    saveConfig: async (data: { api_key: string; model_name?: string }): Promise<ApiResponse<void>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.saveConfig(data) as Promise<ApiResponse<void>>;
+    },
+    getProfile: async (): Promise<ApiResponse<AiProfile>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.getProfile() as Promise<ApiResponse<AiProfile>>;
+    },
+    evaluateHealthScore: async (): Promise<ApiResponse<{ score: number; assessment: string }>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.evaluateHealthScore() as Promise<ApiResponse<{ score: number; assessment: string }>>;
+    },
+    getRecommendations: async (): Promise<ApiResponse<AiRecommendation[]>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.getRecommendations() as Promise<ApiResponse<AiRecommendation[]>>;
+    },
+    generateRecommendations: async (): Promise<ApiResponse<AiRecommendation[]>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.generateRecommendations() as Promise<ApiResponse<AiRecommendation[]>>;
+    },
+    applyRecommendation: async (id: number): Promise<ApiResponse<void>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.applyRecommendation(id) as Promise<ApiResponse<void>>;
+    },
+    dismissRecommendation: async (id: number): Promise<ApiResponse<void>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.dismissRecommendation(id) as Promise<ApiResponse<void>>;
+    },
+    getAnomalies: async (): Promise<ApiResponse<AiAnomaly[]>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.getAnomalies() as Promise<ApiResponse<AiAnomaly[]>>;
+    },
+    scanAnomalies: async (): Promise<ApiResponse<number>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.scanAnomalies() as Promise<ApiResponse<number>>;
+    },
+    getForecasts: async (): Promise<ApiResponse<AiForecast[]>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.getForecasts() as Promise<ApiResponse<AiForecast[]>>;
+    },
+    generateForecast: async (): Promise<ApiResponse<AiForecast[]>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.generateForecast() as Promise<ApiResponse<AiForecast[]>>;
+    },
+    getScenarios: async (): Promise<ApiResponse<AiScenario[]>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.getScenarios() as Promise<ApiResponse<AiScenario[]>>;
+    },
+    runScenario: async (data: {
+      name: string;
+      scenario_type: 'large_expense' | 'income_loss' | 'custom';
+      expenseAmount?: number;
+      monthlyCost?: number;
+      months?: number;
+    }): Promise<ApiResponse<AiScenario>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.runScenario(data) as Promise<ApiResponse<AiScenario>>;
+    },
+    getChatSessions: async (): Promise<ApiResponse<AiChatSession[]>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.getChatSessions() as Promise<ApiResponse<AiChatSession[]>>;
+    },
+    getChatMessages: async (sessionId: number): Promise<ApiResponse<AiChatMessage[]>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.getChatMessages(sessionId) as Promise<ApiResponse<AiChatMessage[]>>;
+    },
+    sendChatMessage: async (sessionId: number, content: string): Promise<ApiResponse<string>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.sendChatMessage(sessionId, content) as Promise<ApiResponse<string>>;
     },
   },
 };

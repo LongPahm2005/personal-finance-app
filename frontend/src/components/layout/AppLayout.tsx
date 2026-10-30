@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { QuickTransactionModal } from '../common/QuickTransactionModal';
+import { FloatingAiChat } from '../common/FloatingAiChat';
 
 // Route metadata for topbar titles
 const pageMeta: Record<string, { title: string; subtitle: string }> = {
@@ -14,7 +15,8 @@ const pageMeta: Record<string, { title: string; subtitle: string }> = {
   '/budgets': { title: 'Ngân sách Chi tiêu', subtitle: 'Thiết lập và giám sát hạn mức chi tiêu' },
   '/savings': { title: 'Mục tiêu Tiết kiệm', subtitle: 'Đặt mục tiêu và tích lũy tài sản cho tương lai' },
   '/reports': { title: 'Báo cáo Phân tích', subtitle: 'Biểu đồ trực quan và thống kê chi tiết' },
-  '/settings': { title: 'Cài đặt & Dữ liệu', subtitle: 'Quản lý danh mục, giao dịch định kỳ và sao lưu' },
+  '/forecast-scenarios': { title: 'Dự báo & Mô phỏng Kịch bản', subtitle: 'Phân tích dòng tiền tương lai & Thử nghiệm kế hoạch What-If' },
+  '/settings': { title: 'Cài đặt & Dữ liệu', subtitle: 'Quản lý mô hình AI, sao lưu dữ liệu và kiểm tra hệ thống' },
 };
 
 export const AppLayout: React.FC = () => {
@@ -55,6 +57,9 @@ export const AppLayout: React.FC = () => {
         onClose={() => setIsQuickAddOpen(false)}
         onSuccess={handleTransactionAdded}
       />
+
+      {/* Trợ lý ảo Chatbot AI nổi trên toàn bộ màn hình */}
+      <FloatingAiChat />
     </div>
   );
 };

@@ -1,5 +1,11 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
+import dotenv from 'dotenv';
+
+// Tải cấu hình .env
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config();
+
 import { closePool, testConnection } from './database/connection';
 import { registerCategoryIpc } from './ipc/category.ipc';
 import { registerWalletIpc } from './ipc/wallet.ipc';
@@ -10,6 +16,7 @@ import { registerSavingIpc } from './ipc/saving.ipc';
 import { registerRecurringIpc } from './ipc/recurring.ipc';
 import { registerReportIpc } from './ipc/report.ipc';
 import { registerSystemIpc } from './ipc/system.ipc';
+import { registerAiIpc } from './ipc/ai.ipc';
 import { RecurringService } from './services/recurring.service';
 
 app.setName('Personal Finance');
@@ -62,13 +69,14 @@ function registerAllIpc() {
   registerRecurringIpc();
   registerReportIpc();
   registerSystemIpc();
+  registerAiIpc();
 }
 
 app.whenReady().then(async () => {
   // Test connection on boot
   const connTest = await testConnection();
   if (connTest.success) {
-    console.log('SQLite database initialized successfully.');
+    console.log(connTest.message);
     // Process due recurring transactions on startup
     try {
       const recurringService = new RecurringService();

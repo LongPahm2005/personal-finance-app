@@ -1,0 +1,84 @@
+name: CI/CD Pipeline - AI Personal Finance Desktop
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - Long
+  pull_request:
+    branches:
+      - master
+      - main
+      - Long
+
+jobs:
+  validate-and-build:
+    name: Build & Validate (Frontend + Electron)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint check
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Build Vite Frontend & Electron Backend
+        run: npm run build
+
+      - name: Verify build artifacts
+        run: |
+          if (Test-Path "dist/index.html") {
+            Write-Host "Vite build artifact verified successfully."
+          } else {
+            Write-Error "dist/index.html not found!"
+            exit 1
+          }
+          if (Test-Path "backend/dist-electron/main.js") {
+            Write-Host "Electron backend artifact verified successfully."
+          } else {
+            Write-Error "backend/dist-electron/main.js not found!"
+            exit 1
+          }
+
+  release-package:
+    name: Package Desktop App (Windows Installer)
+    needs: validate-and-build
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Build Windows Installer (.exe)
+        run: npm run dist
+
+      - name: Upload Release Executable Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: personal-finance-windows-installer
+          path: release/*.exe

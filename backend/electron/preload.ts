@@ -92,6 +92,28 @@ const api = {
     getCategoryExpenses: (month?: string) => ipcRenderer.invoke('reports:getCategoryExpenses', month),
     getBalanceTrend: (months?: number) => ipcRenderer.invoke('reports:getBalanceTrend', months),
   },
+
+  // AI-Powered Decision Support (Module 5)
+  ai: {
+    getConfig: () => ipcRenderer.invoke('ai:getConfig'),
+    saveConfig: (data: { api_key: string; model_name?: string }) => ipcRenderer.invoke('ai:saveConfig', data),
+    saveModel: (modelName: string) => ipcRenderer.invoke('ai:saveModel', modelName),
+    getProfile: () => ipcRenderer.invoke('ai:getProfile'),
+    evaluateHealthScore: () => ipcRenderer.invoke('ai:evaluateHealthScore'),
+    getRecommendations: () => ipcRenderer.invoke('ai:getRecommendations'),
+    generateRecommendations: () => ipcRenderer.invoke('ai:generateRecommendations'),
+    applyRecommendation: (id: number) => ipcRenderer.invoke('ai:applyRecommendation', id),
+    dismissRecommendation: (id: number) => ipcRenderer.invoke('ai:dismissRecommendation', id),
+    getAnomalies: () => ipcRenderer.invoke('ai:getAnomalies'),
+    scanAnomalies: () => ipcRenderer.invoke('ai:scanAnomalies'),
+    getForecasts: () => ipcRenderer.invoke('ai:getForecasts'),
+    generateForecast: () => ipcRenderer.invoke('ai:generateForecast'),
+    getScenarios: () => ipcRenderer.invoke('ai:getScenarios'),
+    runScenario: (data: unknown) => ipcRenderer.invoke('ai:runScenario', data),
+    getChatSessions: () => ipcRenderer.invoke('ai:getChatSessions'),
+    getChatMessages: (sessionId: number) => ipcRenderer.invoke('ai:getChatMessages', sessionId),
+    sendChatMessage: (sessionId: number, content: string) => ipcRenderer.invoke('ai:sendChatMessage', sessionId, content),
+  },
 };
 
 contextBridge.exposeInMainWorld('api', api);
