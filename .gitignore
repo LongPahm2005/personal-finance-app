@@ -33,3 +33,6 @@ release
 # Local SQLite data must never be committed to the source repository.
 /personal_finance.sqlite
 /personal_finance.sqlite-*
+
+# Office temporary lock files
+~$*

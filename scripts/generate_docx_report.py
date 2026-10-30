@@ -2,7 +2,7 @@ import os
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
+from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import OxmlElement, parse_xml
 from docx.oxml.ns import nsdecls, qn
 
@@ -37,7 +37,7 @@ def add_styled_heading(doc, text, level):
         run.font.bold = True
         run.font.color.rgb = RGBColor(28, 80, 140)
     elif level == 3:
-        run.font.size = Pt(12.5)
+        run.font.size = Pt(12)
         run.font.bold = True
         run.font.color.rgb = RGBColor(40, 40, 40)
     return h
@@ -164,11 +164,13 @@ def build_docx(output_path):
     toc_items = [
         "LỜI MỞ ĐẦU & TÍNH CẤP THIẾT CỦA ĐỀ TÀI",
         "DANH MỤC THUẬT NGỮ & TỪ VIẾT TẮT",
-        "CHƯƠNG 1: TỔNG QUAN & ĐẶC TẢ YÊU CẦU HỆ THỐNG (YÊU CẦU 1 & 2)",
-        "  1.1 Khảo sát hiện trạng & Giới hạn của các phần mềm sổ thu chi thụ động",
-        "  1.2 Sơ đồ phân rã chức năng nghiệp vụ (BFD - Business Function Diagram)",
-        "  1.3 So sánh chức năng Quản lý vận hành (TPS) vs Hỗ trợ ra quyết định (DSS)",
-        "  1.4 Sơ đồ Use Case tổng quát và kịch bản tương tác người dùng",
+        "CHƯƠNG 1: TỔNG QUAN, MỤC TIÊU & ĐẶC TẢ YÊU CẦU HỆ THỐNG (YÊU CẦU 1 & 2)",
+        "  1.1 Bối cảnh thực tế & Tính cấp thiết",
+        "  1.2 Mục tiêu của dự án (Mục tiêu tổng quát & Mục tiêu cụ thể)",
+        "  1.3 Phạm vi của dự án (Chức năng In/Out-Scope, Đối tượng, Công nghệ, Thời gian)",
+        "  1.4 Sơ đồ phân rã chức năng nghiệp vụ (BFD - Business Function Diagram)",
+        "  1.5 Bảng so sánh chức năng Quản lý (TPS) vs Hỗ trợ ra quyết định (DSS)",
+        "  1.6 Sơ đồ Use Case tổng quát và kịch bản tương tác người dùng",
         "CHƯƠNG 2: THIẾT KẾ LƯU ĐỒ QUY TRÌNH HỖ TRỢ RA QUYẾT ĐỊNH (FLOWCHARTS - YÊU CẦU 3)",
         "  2.1 Quy trình Đánh giá sức khỏe tài chính & Khẩu vị rủi ro (Mô hình phạt lỗi)",
         "  2.2 Quy trình Quét & Phát hiện chi tiêu bất thường (Anomaly Detection)",
@@ -243,10 +245,67 @@ def build_docx(output_path):
         r1 = row[1].paragraphs[0].add_run(desc); r1.font.name = 'Times New Roman'; r1.font.size = Pt(11)
 
     # ------------------ CHƯƠNG 1 ------------------
-    add_styled_heading(doc, "CHƯƠNG 1: TỔNG QUAN & ĐẶC TẢ YÊU CẦU HỆ THỐNG (YÊU CẦU 1 & 2)", level=1)
-    add_body_p(doc, "Chương này đặc tả cấu trúc nghiệp vụ hệ thống và phân định rõ ràng giữa các chức năng quản lý nghiệp vụ thường nhật với các bài toán Hỗ trợ ra quyết định (DSS).")
+    add_styled_heading(doc, "CHƯƠNG 1: TỔNG QUAN, MỤC TIÊU & ĐẶC TẢ YÊU CẦU HỆ THỐNG (YÊU CẦU 1 & 2)", level=1)
     
-    add_styled_heading(doc, "1.1 Sơ đồ Phân rã Chức năng Nghiệp vụ (BFD chuẩn 6 Module)", level=2)
+    add_styled_heading(doc, "1.1 Bối Cảnh Thực Tế & Tính Cấp Thiết", level=2)
+    add_body_p(doc, "Trong thời kỳ kinh tế nhiều biến động, việc quản lý tài chính cá nhân ngày càng đóng vai trò sống còn. Việc chi tiêu thiếu kiểm soát, không có quỹ dự phòng khẩn cấp và nợ nần mất kiểm soát là những nguyên nhân hàng đầu dẫn đến bất ổn tài chính.")
+    add_body_p(doc, "Các ứng dụng hiện tại chỉ đóng vai trò ghi chép thụ động, không giải đáp được các câu hỏi then chốt: 'Liệu tôi có đủ tiền mua laptop này không?', 'Với đà chi tiêu này, tháng sau tôi có bị âm tiền không?', hay 'Tôi nên cắt giảm chi tiêu vào danh mục nào để đạt mục tiêu mua nhà?'. Do đó, việc xây dựng một Hệ thống Hỗ trợ Ra Quyết định (DSS) tích hợp AI là nhu cầu cấp bách.")
+
+    add_styled_heading(doc, "1.2 Mục Tiêu Của Dự Án (Project Goals & Objectives)", level=2)
+    add_body_p(doc, "Đề tài xác định rõ ràng mục tiêu tổng quát và các mục tiêu cụ thể cần đạt được:")
+    
+    add_body_p(doc, "1.2.1 Mục tiêu tổng quát (General Objective):", bold_prefix="a) ")
+    add_body_p(doc, "Xây dựng hoàn chỉnh một ứng dụng Desktop mang tên Hệ thống Hỗ trợ Ra Quyết định Tài chính Cá nhân bằng Trí tuệ Nhân tạo (AI-FDSS), kết hợp giữa hệ quản trị cơ sở dữ liệu quan hệ MySQL, các giải thuật định lượng tài chính (Time-Series, Scoring Rules) và mô hình ngôn ngữ lớn (Google Gemini AI) nhằm giúp người dùng cá nhân chủ động kiểm soát dòng tiền, ngăn ngừa nguy cơ vỡ nợ và ra quyết định tài chính tối ưu.")
+
+    add_body_p(doc, "1.2.2 Mục tiêu cụ thể (Specific Objectives):", bold_prefix="b) ")
+    objectives = [
+        "Mục tiêu 1 (Chuẩn hóa nghiệp vụ TPS): Xây dựng đầy đủ các chức năng quản lý tài chính nền tảng bao gồm quản lý đa ví tiền, danh mục thu/chi đa cấp, ghi chép giao dịch, lập lịch định kỳ, giám sát ngân sách và sổ nợ 2 chiều.",
+        "Mục tiêu 2 (Hiện thực hóa các bài toán DSS cốt lõi): Thiết kế và cài đặt thành công 5 năng lực hỗ trợ ra quyết định thông minh:",
+        "   • Đánh giá Điểm sức khỏe tài chính & Khẩu vị rủi ro với mô hình trừ điểm vi phạm (thang 10 - 100).",
+        "   • Tự động quét và phát hiện giao dịch chi tiêu bất thường (Anomaly Detection) vượt ngưỡng 2.5 lần trung bình.",
+        "   • Dự báo dòng tiền tương lai 3 tháng với 3 kịch bản: Tích cực, Kỳ vọng và Thận trọng (Time-Series).",
+        "   • Mô phỏng kịch bản giả định What-If đối soát khả năng thanh toán trước các quyết định mua sắm lớn / trả góp.",
+        "   • Trợ lý ảo cố vấn tài chính AI Copilot tương tác tự nhiên theo ngữ cảnh dữ liệu thực tế (kỹ thuật RAG).",
+        "Mục tiêu 3 (Trực quan hóa dữ liệu & Báo cáo): Thiết kế bảng điều khiển Dashboard chỉ huy hỗ trợ ra quyết định trong 3 giây; tích hợp hệ thống biểu đồ trực quan (Recharts) và chức năng xuất báo cáo định dạng CSV.",
+        "Mục tiêu 4 (Tự động hóa & Khả năng triển khai độc lập): Tích hợp cơ chế Zero-Config tự động khởi tạo CSDL MySQL 17 bảng khi chạy ở máy mới; thiết lập quy trình kiểm thử tự động CI/CD trên GitHub Actions và đóng gói file cài đặt (.exe Installer) hoàn chỉnh."
+    ]
+    for obj in objectives:
+        add_body_p(doc, obj, space_after=3)
+
+    add_styled_heading(doc, "1.3 Phạm Vi Của Dự Án (Project Scope)", level=2)
+    add_body_p(doc, "Để đảm bảo tính khả thi và chất lượng bàn giao theo đúng thời hạn 10 tuần, phạm vi dự án được phân định cụ thể như sau:")
+
+    add_body_p(doc, "1.3.1 Phạm vi Chức năng (Functional Scope):", bold_prefix="a) ")
+    scope_in = [
+        "Phạm vi bao gồm (In-Scope):",
+        "   • Quản lý thu/chi, phân bổ nguồn tiền giữa các ví (tiền mặt, thẻ ngân hàng, ví điện tử).",
+        "   • Thiết lập và theo dõi hạn mức ngân sách chi tiêu hàng tháng kèm tỷ lệ cảnh báo.",
+        "   • Quản lý danh bạ công nợ 2 chiều (nợ phải thu và nợ phải trả) kèm lịch sử thanh toán từng đợt.",
+        "   • Tự động đánh giá sức khỏe tài chính và đề xuất các quyết định can thiệp 1-Click Apply.",
+        "   • Phân tích What-If đối soát kế hoạch mua sắm lớn với dòng tiền dự phóng 3 tháng.",
+        "   • Hội thoại trực tiếp với Trợ lý AI Copilot về tình hình tài chính thực tế.",
+        "   • Báo cáo trực quan hóa biểu đồ và xuất dữ liệu báo cáo ra file CSV.",
+        "Phạm vi không bao gồm / Giới hạn hệ thống (Out-of-Scope):",
+        "   • Không tích hợp cổng thanh toán trực tiếp với các ngân hàng thương mại (do giới hạn pháp lý và chi phí API doanh nghiệp). Dữ liệu được ghi nhận thông qua nhập liệu người dùng.",
+        "   • Không quản lý danh mục đầu tư chứng khoán, tiền mã hóa theo thời gian thực (real-time trading).",
+        "   • Không thiết lập phân quyền quản trị đa người dùng phức tạp (RBAC) do hệ thống định vị là ứng dụng cá nhân hóa chạy độc lập (Single-User Desktop Privacy-First)."
+    ]
+    for sc in scope_in:
+        add_body_p(doc, sc, space_after=3)
+
+    add_body_p(doc, "1.3.2 Phạm vi Đối tượng Người dùng (Target Audience):", bold_prefix="b) ")
+    add_body_p(doc, "Hệ thống hướng đến đối tượng người dùng cá nhân bao gồm: sinh viên đại học, người mới đi làm, nhân viên văn phòng và các chủ gia đình trẻ có thu nhập từ 1 hoặc nhiều nguồn, mong muốn kiểm soát chi tiêu chặt chẽ, xóa nợ và cần công cụ trợ lý thông minh hỗ trợ các quyết định chi dùng lớn.")
+
+    add_body_p(doc, "1.3.3 Phạm vi Công nghệ & Nền tảng Triển khai (Platform & Technical Scope):", bold_prefix="c) ")
+    add_body_p(doc, "• Hệ điều hành mục tiêu: Chạy mượt mà trên hệ điều hành Microsoft Windows 10 và Windows 11 (64-bit).")
+    add_body_p(doc, "• Kiến trúc: Ứng dụng Desktop Native xây dựng trên nền Electron v34, giao diện React 19, TypeScript và Tailwind CSS.")
+    add_body_p(doc, "• Cơ sở dữ liệu: Hệ quản trị CSDL quan hệ MySQL Server 8.0 chạy cục bộ qua cổng chuẩn 3306.")
+    add_body_p(doc, "• Động cơ Trí tuệ Nhân tạo: Kết nối an toàn với Google Gemini 2.5 Flash API qua kênh IPC nội bộ của Electron.")
+
+    add_body_p(doc, "1.3.4 Phạm vi Thời gian Triển khai (Time Scope):", bold_prefix="d) ")
+    add_body_p(doc, "Dự án được thực hiện nghiêm ngặt trong 10 tuần, bắt đầu từ ngày 03/10/2026 và kết thúc, nghiệm thu báo cáo vào ngày 12/12/2026, tuân thủ mô hình phát triển phần mềm lặp Agile/Scrum gồm 5 Sprint (mỗi Sprint 2 tuần).")
+
+    add_styled_heading(doc, "1.4 Sơ Đồ Phân Rã Chức Năng Nghiệp Vụ (BFD chuẩn 6 Module)", level=2)
     add_body_p(doc, "Hệ thống được thiết kế theo cấu trúc phân rã chuẩn gồm 6 Module nghiệp vụ chính:")
     
     bfd_text = (
@@ -281,7 +340,7 @@ def build_docx(output_path):
     )
     add_code_box(doc, bfd_text)
 
-    add_styled_heading(doc, "1.2 Bảng Phân Biệt Giữa Chức Năng Quản Lý (TPS) và Chức Năng Hỗ Trợ Ra Quyết Định (DSS)", level=2)
+    add_styled_heading(doc, "1.5 Bảng Phân Biệt Giữa Chức Năng Quản Lý (TPS) và Chức Năng Hỗ Trợ Ra Quyết Định (DSS)", level=2)
     add_body_p(doc, "Bảng dưới đây chứng minh rõ nét sự khác biệt giữa các chức năng nhập liệu đơn thuần và các chức năng DSS thực thụ của đồ án:")
 
     t_dss = doc.add_table(rows=1, cols=4)
@@ -545,8 +604,14 @@ def build_docx(output_path):
     add_body_p(doc, "• Định hướng tương lai: Nhóm dự kiến sử dụng Capacitor hoặc React Native để tái sử dụng mã nguồn và lấn sân sang nền tảng Mobile (iOS / Android), kết hợp công nghệ OCR đọc hóa đơn tự động qua Vision AI.")
 
     # Save document
-    doc.save(output_path)
-    print(f"File created successfully at: {output_path}")
+    try:
+        doc.save(output_path)
+        print(f"File updated successfully at: {output_path}")
+    except PermissionError:
+        fallback_path = output_path.replace(".docx", "_Moi_Nhat.docx")
+        doc.save(fallback_path)
+        print(f"WARNING: File {output_path} is currently OPEN in Microsoft Word.")
+        print(f"Saved updated file to: {fallback_path}")
 
 if __name__ == "__main__":
     out_dir = r"d:\personal-finance\docs"

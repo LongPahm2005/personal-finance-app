@@ -84,9 +84,58 @@
 
 ---
 
-## CHƯƠNG 1: TỔNG QUAN & ĐẶC TẢ YÊU CẦU HỆ THỐNG (YÊU CẦU 1 & 2)
+## CHƯƠNG 1: TỔNG QUAN, MỤC TIÊU & ĐẶC TẢ YÊU CẦU HỆ THỐNG (YÊU CẦU 1 & 2)
 
-### 1.1 Cây phân rã chức năng nghiệp vụ (BFD chuẩn 6 Module)
+### 1.1 Mục tiêu của dự án (Project Goals & Objectives)
+
+#### a) Mục tiêu tổng quát (General Objective):
+Xây dựng một Hệ thống Thông tin Hỗ trợ Ra Quyết định (Decision Support System - DSS) hoàn chỉnh trên môi trường máy tính cá nhân (Desktop Application) mang tên **AI-FDSS** (*Personal Financial Decision Support System by AI*). Hệ thống là sự kết hợp chặt chẽ giữa Cơ sở dữ liệu quan hệ MySQL 8.0, các mô hình toán học định lượng tài chính (Time-Series, Scoring Rules) và Trí tuệ Nhân tạo tạo sinh (Google Gemini AI) nhằm giúp người dùng cá nhân chủ động kiểm soát dòng tiền, ngăn ngừa nguy cơ vỡ nợ và đưa ra các quyết định can thiệp kịp thời chỉ với 1 cú nhấp chuột.
+
+#### b) Mục tiêu cụ thể (Specific Objectives):
+1. **Chuẩn hóa nghiệp vụ quản lý tài chính nền tảng (TPS):** Xây dựng các chức năng theo dõi ví tiền, quản lý danh mục thu/chi đa cấp, ghi chép giao dịch, lập lịch định kỳ, hạn mức ngân sách và quản lý sổ công nợ 2 chiều.
+2. **Hiện thực hóa 5 bài toán Hỗ trợ Ra Quyết định (DSS) cốt lõi:**
+   * **Đánh giá sức khỏe tài chính & Khẩu vị rủi ro:** Chấm điểm theo mô hình trừ điểm vi phạm (Penalty Model) với mức điểm chuẩn khởi tạo 100/100.
+   * **Quét và phát hiện chi tiêu bất thường (Anomaly Detection):** Tự động phát hiện các khoản chi tiêu vượt 2.5 lần mức trung bình 90 ngày.
+   * **Dự báo dòng tiền tương lai 3 tháng:** Sử dụng thuật toán Time-Series kết hợp tốc độ tăng trưởng để sinh 3 kịch bản số dư (Tích cực, Kỳ vọng, Thận trọng).
+   * **Mô phỏng kịch bản giả định What-If:** Đối soát kế hoạch mua sắm tài sản lớn / trả góp với dòng tiền khả dụng trong tương lai.
+   * **Trợ lý cố vấn tài chính AI Copilot:** Tư vấn chuyên sâu ngữ cảnh tài chính thực tế bằng tiếng Việt thông qua kỹ thuật RAG Finance.
+3. **Trực quan hóa dữ liệu & Báo cáo quản trị:** Thiết kế trung tâm chỉ huy Dashboard ra quyết định trong 3 giây; tích hợp biểu đồ trực quan (Recharts) và chức năng xuất báo cáo định dạng CSV.
+4. **Tự động hóa triển khai & Đóng gói sản phẩm:** Tích hợp module tự động sinh Database và bảng biểu khi sang máy mới (Zero-Config), thiết lập quy trình kiểm thử tự động CI/CD trên GitHub Actions và đóng gói bộ cài đặt độc lập (.exe Installer) trên Windows.
+
+---
+
+### 1.2 Phạm vi của dự án (Project Scope)
+
+#### a) Phạm vi Chức năng (Functional Scope):
+* **Bao gồm trong dự án (In-Scope):**
+  * Quản lý đa tài khoản/ví tiền (tiền mặt, tài khoản ngân hàng, ví điện tử).
+  * Ghi chép, phân loại và lập lịch giao dịch tài chính thu/chi.
+  * Thiết lập ngân sách chi tiêu và tự động giám sát mức độ giải ngân.
+  * Quản lý sổ nợ 2 chiều (Tôi nợ người khác / Người khác nợ tôi) và lịch trình trả nợ.
+  * Tự động phân tích, cảnh báo chi tiêu lạ và đưa ra khuyến nghị can thiệp 1-Click.
+  * Dự báo số dư 3 tháng tới và thử nghiệm kịch bản What-If mua sắm tài sản lớn.
+  * Trò chuyện, vấn đáp với Trợ lý AI Copilot về tình hình tài chính thực tế.
+  * Báo cáo phân tích thu chi, ngân sách, công nợ và xuất dữ liệu CSV.
+* **Không bao gồm / Giới hạn hệ thống (Out-of-Scope):**
+  * *Không liên kết trực tiếp Open Banking API:* Không kết nối tự động kéo số dư/thanh toán trực tiếp với các ngân hàng thương mại Việt Nam (do rào cản pháp lý và chi phí API doanh nghiệp). Dữ liệu được người dùng chủ động quản lý.
+  * *Không giao dịch đầu tư tài chính thời gian thực:* Không hỗ trợ đặt lệnh mua/bán cổ phiếu, tiền mã hóa theo thời gian thực (real-time trading).
+  * *Không phân quyền quản trị đa người dùng phức tạp (RBAC):* Hệ thống định vị là ứng dụng cá nhân hóa chạy độc lập (Single-User Desktop Privacy-First), đảm bảo quyền riêng tư tuyệt đối cho dữ liệu tài chính của người dùng.
+
+#### b) Phạm vi Đối tượng Người dùng (Target Audience):
+Sinh viên đại học, người mới đi làm, nhân viên văn phòng và các hộ gia đình trẻ có nhu cầu quản lý chi tiêu cá nhân, thiết lập quỹ dự phòng khẩn cấp, xóa nợ và cần một công cụ thông minh hỗ trợ các quyết định chi dùng lớn.
+
+#### c) Phạm vi Công nghệ & Nền tảng (Platform & Technical Scope):
+* **Hệ điều hành:** Microsoft Windows 10 & Windows 11 (64-bit).
+* **Công nghệ ứng dụng:** Desktop Native trên Electron v34, React 19, TypeScript, Tailwind CSS, Lucide Icons, Recharts.
+* **Hệ quản trị CSDL:** MySQL Server 8.0 chạy cục bộ (Localhost cổng 3306).
+* **AI Model:** Google Gemini API (gemini-2.5-flash / gemini-flash-latest) kết nối an toàn qua Electron IPC.
+
+#### d) Phạm vi Thời gian Triển khai (Time Scope):
+Dự án được thực hiện trong đúng 10 tuần, từ ngày **03/10/2026** đến ngày **12/12/2026**, chia làm 5 Sprint (mỗi Sprint 2 tuần) theo quy trình Agile/Scrum.
+
+---
+
+### 1.3 Cây phân rã chức năng nghiệp vụ (BFD chuẩn 6 Module)
 Hệ thống được thiết kế theo mô hình Ứng dụng Desktop Cá nhân (Single-User Desktop Privacy-First), phân rã thành 6 module nghiệp vụ ngắn gọn:
 
 ```
