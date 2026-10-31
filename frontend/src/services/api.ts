@@ -329,6 +329,14 @@ export const api = {
   },
 
   ai: {
+    generateDailyBaseline: async (): Promise<ApiResponse<import('../types').DailyBaseline>> => {
+      if (!window.api?.ai?.generateDailyBaseline) return { success: false, error: 'Vui lòng khởi động lại Electron để tải chức năng dự báo mới.' };
+      return window.api.ai.generateDailyBaseline();
+    },
+    testConnection: async (): Promise<ApiResponse<import('../types').AiConnectionStatus>> => {
+      if (!window.api?.ai?.testConnection) return { success: false, error: 'Vui lòng khởi động lại Electron để kiểm tra kết nối AI.' };
+      return window.api.ai.testConnection();
+    },
     getConfig: async (): Promise<ApiResponse<AiConfig>> => {
       if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
       return window.api.ai.getConfig() as Promise<ApiResponse<AiConfig>>;
@@ -392,6 +400,8 @@ export const api = {
       return window.api.ai.getScenarios() as Promise<ApiResponse<AiScenario[]>>;
     },
     runScenario: async (data: {
+      incomeLossPercent?: number;
+      purchasePrice?: number;
       name: string;
       scenario_type: 'large_expense' | 'income_loss' | 'custom';
       expenseAmount?: number;

@@ -95,6 +95,8 @@ const api = {
 
   // AI-Powered Decision Support (Module 5)
   ai: {
+    generateDailyBaseline: () => ipcRenderer.invoke('ai:generateDailyBaseline'),
+    testConnection: () => ipcRenderer.invoke('ai:testConnection'),
     getConfig: () => ipcRenderer.invoke('ai:getConfig'),
     saveConfig: (data: { api_key: string; model_name?: string }) => ipcRenderer.invoke('ai:saveConfig', data),
     saveModel: (modelName: string) => ipcRenderer.invoke('ai:saveModel', modelName),

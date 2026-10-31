@@ -1,0 +1,36 @@
+const assert = require('node:assert/strict');
+const { calculateScenario } = require('../../backend/dist-electron/services/forecast/scenarios.js');
+const snapshot = { totalBalance: 50000000, monthlyIncome: 20000000, monthlyExpense: 12000000 };
+const purchase = { name: 'Motorbike', scenario_type: 'large_expense', purchasePrice: 35000000, expenseAmount: 10000000, monthlyCost: 2500000, months: 12 };
+const result = calculateScenario(purchase, snapshot);
+assert.equal(result.remainingBalance, 40000000);
+assert.equal(result.newMonthlySurplus, 5500000);
+assert.equal(result.endingBalance, 106000000);
+assert.equal(result.difference, -40000000);
+assert.equal(result.calculation.steps[3].value, 40000000);
+assert.equal(result.calculation.steps[4].value, 5000000);
+assert.equal(result.calculation.schedule.length, 13);
+for (const row of result.calculation.schedule) {
+  assert.equal(row.balance - row.baseline, row.difference);
+  assert.ok(Number.isSafeInteger(row.balance));
+}
+assert.throws(() => calculateScenario({ ...purchase, monthlyCost: 1000 }, snapshot));
+assert.throws(() => calculateScenario({ ...purchase, expenseAmount: 35000000, monthlyCost: 1 }, snapshot));
+const loss = calculateScenario({ name: 'Income loss', scenario_type: 'income_loss', incomeLossPercent: 25, months: 6 }, snapshot);
+assert.equal(loss.newMonthlySurplus, 3000000);
+assert.equal(loss.endingBalance, 68000000);
+assert.equal(loss.difference, -30000000);
+assert.throws(() => calculateScenario({ name: 'Missing rate', scenario_type: 'income_loss', months: 6 }, snapshot));
+assert.throws(() => calculateScenario({ name: 'Bad rate', scenario_type: 'income_loss', incomeLossPercent: 101, months: 6 }, snapshot));
+const custom = calculateScenario({ name: 'Extra expense', scenario_type: 'custom', expenseAmount: 1000000, monthlyCost: 2000000, months: 3 }, snapshot);
+assert.equal(custom.newMonthlySurplus, 6000000);
+assert.equal(custom.endingBalance, 67000000);
+assert.equal(custom.difference, -7000000);
+const negative = calculateScenario({ ...purchase, months: 12 }, { totalBalance: 10000000, monthlyIncome: 1000000, monthlyExpense: 2000000 });
+assert.equal(negative.firstNegativeMonth, 1);
+assert.equal(negative.calculation.status, 'danger');
+const immediate = calculateScenario(purchase, { ...snapshot, totalBalance: 0 });
+assert.equal(immediate.firstNegativeMonth, 0);
+const restored = JSON.parse(JSON.stringify(result));
+assert.deepEqual(restored.calculation, result.calculation);
+console.log('Scenario calculation checks passed: purchase totals, all monthly balances, underpayment, paid-in-full, configurable income loss, independent custom expense, negative month detection, persisted calculation snapshot.');

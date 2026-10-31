@@ -1,14 +1,29 @@
 import { ipcMain } from 'electron';
 import { AiService } from '../services/ai.service';
+import { ForecastService } from '../services/forecast.service';
 
 export function registerAiIpc(): void {
   const aiService = new AiService();
+  ipcMain.handle('ai:generateDailyBaseline', async () => {
+    try {
+      return { success: true, data: await new ForecastService().generateBaseline() };
+    } catch (err: unknown) {
+      return { success: false, error: (err as Error).message };
+    }
+  });
+  ipcMain.handle('ai:testConnection', async () => {
+    try {
+      return { success: true, data: await aiService.testConnection() };
+    } catch (err: unknown) {
+      return { success: false, error: (err as Error).message };
+    }
+  });
 
   // 1. Config & API Key
   ipcMain.handle('ai:getConfig', async () => {
     try {
       const data = await aiService.getConfig();
-      return { success: true, data };
+      return { success: true, data: { ...data, api_key: '' } };
     } catch (err: unknown) {
       return { success: false, error: (err as Error).message };
     }
@@ -139,11 +154,16 @@ export function registerAiIpc(): void {
       const data = await aiService.getScenarios();
       return { success: true, data };
     } catch (err: unknown) {
+      if ((err as { code?: string }).code === 'ER_NO_SUCH_TABLE') {
+        return { success: false, code: 'AI_SCHEMA_REQUIRED', error: 'Chức năng kịch bản cần bổ sung bảng AI vào cơ sở dữ liệu. Dữ liệu thu/chi hiện tại vẫn được giữ nguyên.' };
+      }
       return { success: false, error: (err as Error).message };
     }
   });
 
   ipcMain.handle('ai:runScenario', async (_, data: {
+    incomeLossPercent?: number;
+    purchasePrice?: number;
     name: string;
     scenario_type: 'large_expense' | 'income_loss' | 'custom';
     expenseAmount?: number;

@@ -1,6 +1,8 @@
+import { calculateScenario, type ScenarioInput } from './forecast/scenarios';
 import { getPool } from '../database/connection';
 import type { RowDataPacket, ResultSetHeader } from '../database/types';
 import { ReportService } from './report.service';
+import { geminiRequest, testGeminiConnection } from './gemini';
 
 export interface AiProfileModel {
   id: number;
@@ -79,14 +81,21 @@ export class AiService {
    */
   async getConfig(): Promise<AiConfigModel> {
     const pool = getPool();
-    const [rows] = await pool.query<RowDataPacket[]>(
-      'SELECT * FROM ai_configs WHERE is_active = 1 ORDER BY id DESC LIMIT 1'
-    );
+    // Older installations may not have AI tables yet. Environment configuration
+    // still permits a connection test without creating or migrating any table.
+    let rows: RowDataPacket[] = [];
+    try {
+      [rows] = await pool.query<RowDataPacket[]>(
+        'SELECT * FROM ai_configs WHERE is_active = 1 ORDER BY id DESC LIMIT 1'
+      );
+    } catch (error) {
+      if ((error as { code?: string }).code !== 'ER_NO_SUCH_TABLE') throw error;
+    }
     if (rows.length > 0) {
       return {
         id: Number(rows[0].id),
         provider: String(rows[0].provider || 'gemini'),
-        api_key: String(rows[0].api_key || process.env.AI_API_KEY || ''),
+        api_key: String(process.env.AI_API_KEY?.trim() || rows[0].api_key || ''),
         model_name: String(rows[0].model_name || process.env.AI_MODEL || 'gemini-3-flash-preview'),
         temperature: Number(rows[0].temperature || 0.7),
         is_active: Number(rows[0].is_active || 1),
@@ -128,6 +137,7 @@ export class AiService {
    * Cập nhật mô hình AI đang sử dụng (Module 6.1)
    */
   async saveModel(modelName: string): Promise<void> {
+    if (!/^[a-zA-Z0-9._-]+$/.test(modelName)) throw new Error('Tên mô hình Gemini không hợp lệ.');
     const pool = getPool();
     const [existing] = await pool.query<RowDataPacket[]>('SELECT id FROM ai_configs LIMIT 1');
     if (existing.length > 0) {
@@ -139,6 +149,11 @@ export class AiService {
       );
     }
     process.env.AI_MODEL = modelName;
+  }
+
+  async testConnection() {
+    const config = await this.getConfig();
+    return testGeminiConnection(config.api_key, config.model_name);
   }
 
   /**
@@ -324,38 +339,10 @@ export class AiService {
    * Tạo dự báo dòng tiền cho 3 tháng tiếp theo
    */
   async generateForecast(): Promise<void> {
-    const pool = getPool();
-    const summary = await this.reportService.getDashboardSummary();
-    const baseIncome = summary.monthlyIncome || 22000000;
-    const baseExpense = summary.monthlyExpense || 14000000;
-    let currentBalance = summary.totalBalance || 25000000;
-
-    await pool.query('DELETE FROM ai_cashflow_forecasts');
-
-    const now = new Date();
-    for (let i = 1; i <= 3; i++) {
-      const targetDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
-      const periodStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}`;
-
-      // Giả lập mức tăng nhẹ 2% lạm phát hoặc chi phí
-      const predInc = Math.round(baseIncome * (1 + (i - 1) * 0.02));
-      const predExp = Math.round(baseExpense * (1 + (i - 1) * 0.03));
-      currentBalance += predInc - predExp;
-
-      const lower = Math.round(currentBalance * 0.92);
-      const upper = Math.round(currentBalance * 1.08);
-
-      await pool.query(
-        `INSERT INTO ai_cashflow_forecasts (forecast_period, predicted_income, predicted_expense, predicted_ending_balance, lower_bound_balance, upper_bound_balance, model_name)
-         VALUES (?, ?, ?, ?, ?, ?, 'AI/ARIMA-Trend')`,
-        [periodStr, predInc, predExp, currentBalance, lower, upper]
-      );
-    }
+    // Retired monthly API: never generate fabricated values or overwrite stored forecasts.
+    throw new Error('Use ai:generateDailyBaseline; restart Electron to load the daily forecast.');
   }
 
-  /**
-   * Mô phỏng kịch bản What-If (Module 5.4)
-   */
   async getScenarios(): Promise<AiScenarioModel[]> {
     const pool = getPool();
     const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM ai_scenarios ORDER BY id DESC LIMIT 10');
@@ -383,54 +370,12 @@ export class AiService {
   /**
    * Chạy mô phỏng kịch bản mua sắm lớn hoặc mất việc
    */
-  async runScenario(data: {
-    name: string;
-    scenario_type: 'large_expense' | 'income_loss' | 'custom';
-    expenseAmount?: number;
-    monthlyCost?: number;
-    months?: number;
-  }): Promise<AiScenarioModel> {
+  async runScenario(data: ScenarioInput): Promise<AiScenarioModel> {
+    // Validate before any database reads; calculate again with the real snapshot.
+    calculateScenario(data, { totalBalance: 0, monthlyIncome: 0, monthlyExpense: 0 });
     const pool = getPool();
     const summary = await this.reportService.getDashboardSummary();
-    const totalBalance = summary.totalBalance;
-    const monthlySurplus = summary.monthlyIncome - summary.monthlyExpense;
-
-    let aiEvaluation = '';
-    const simResult: Record<string, unknown> = {};
-
-    if (data.scenario_type === 'large_expense') {
-      const upfront = data.expenseAmount || 30000000;
-      const monthlyInstallment = data.monthlyCost || 2000000;
-      const duration = data.months || 12;
-
-      const newBalance = totalBalance - upfront;
-      const newMonthlySurplus = monthlySurplus - monthlyInstallment;
-
-      simResult.remainingBalance = newBalance;
-      simResult.newMonthlySurplus = newMonthlySurplus;
-      simResult.durationMonths = duration;
-
-      if (newBalance < 10000000) {
-        aiEvaluation = `Cảnh báo: Sau khi trả trước ${upfront.toLocaleString('vi-VN')}đ, số dư ví chỉ còn ${newBalance.toLocaleString('vi-VN')}đ (dưới mức an toàn). Bạn nên lùi kế hoạch này thêm 2-3 tháng để tích lũy thêm.`;
-      } else if (newMonthlySurplus < 0) {
-        aiEvaluation = `Nguy hiểm: Khoản trả góp ${monthlyInstallment.toLocaleString('vi-VN')}đ/tháng sẽ làm thâm hụt dòng tiền hàng tháng (${newMonthlySurplus.toLocaleString('vi-VN')}đ). Cần cắt giảm chi tiêu khác trước khi mua.`;
-      } else {
-        aiEvaluation = `Khả thi: Bạn vẫn duy trì được số dư an toàn ${newBalance.toLocaleString('vi-VN')}đ và thặng dư ${newMonthlySurplus.toLocaleString('vi-VN')}đ mỗi tháng sau khi trả góp.`;
-      }
-    } else {
-      const lossPercent = 0.3; // Giảm 30% lương
-      const newIncome = summary.monthlyIncome * (1 - lossPercent);
-      const newSurplus = newIncome - summary.monthlyExpense;
-      simResult.newIncome = newIncome;
-      simResult.newSurplus = newSurplus;
-
-      if (newSurplus < 0) {
-        const monthsUntilZero = Math.round(totalBalance / Math.abs(newSurplus));
-        aiEvaluation = `Nếu thu nhập giảm 30%, bạn sẽ bị âm ${Math.abs(newSurplus).toLocaleString('vi-VN')}đ/tháng. Quỹ dự phòng hiện tại (${totalBalance.toLocaleString('vi-VN')}đ) sẽ đủ duy trì trong khoảng ${monthsUntilZero} tháng.`;
-      } else {
-        aiEvaluation = `Dù thu nhập giảm 30%, bạn vẫn giữ được thặng dư nhỏ ${newSurplus.toLocaleString('vi-VN')}đ/tháng. Kế hoạch tài chính vẫn an toàn.`;
-      }
-    }
+    const { evaluation: aiEvaluation, ...simResult } = calculateScenario(data, summary);
 
     const [res] = await pool.query<ResultSetHeader>(
       `INSERT INTO ai_scenarios (name, scenario_type, parameters, simulation_result, ai_evaluation)
@@ -442,7 +387,7 @@ export class AiService {
       id: res.insertId,
       name: data.name,
       scenario_type: data.scenario_type,
-      parameters: data,
+      parameters: { ...data },
       simulation_result: simResult,
       ai_evaluation: aiEvaluation,
     };
@@ -534,20 +479,10 @@ Bắt buộc trả về đúng định dạng JSON Array chứa các object sau,
 `;
 
     try {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const resData = await geminiRequest(apiKey, `models/${modelName}:generateContent`, {
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { responseMimeType: 'application/json', temperature: 0.3 },
-        }),
-      });
-
-      const resData = (await response.json()) as { error?: { message?: string }; candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
-      if (!response.ok) {
-        throw new Error(resData.error?.message || 'Lỗi gọi API Google Gemini');
-      }
+      }) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
 
       const text = resData.candidates?.[0]?.content?.parts?.[0]?.text;
       const items = JSON.parse(text || '[]');
@@ -568,12 +503,7 @@ Bắt buộc trả về đúng định dạng JSON Array chứa các object sau,
         );
       }
     } catch (err) {
-      console.error('Lỗi khi sinh khuyến nghị AI:', err);
-      // Fallback khuyến nghị mẫu nếu mạng có vấn đề
-      await pool.query(
-        `INSERT INTO ai_recommendations (type, title, summary, detailed_reasoning, potential_savings, confidence_score)
-         VALUES ('spending_cut', 'Tối ưu hóa các khoản chi mua sắm', 'Chi tiêu cá nhân tháng này đang tăng nhanh so với mức thu nhập.', 'Dựa trên phân tích dòng tiền, bạn nên cắt giảm 15% các khoản mua sắm không thiết yếu.', 1200000, 0.92)`
-      );
+      throw new Error(err instanceof Error ? err.message : 'Không thể tạo khuyến nghị từ Gemini.');
     }
 
     return this.getRecommendations();
@@ -627,11 +557,17 @@ Bắt buộc trả về đúng định dạng JSON Array chứa các object sau,
   }
 
   async sendChatMessage(sessionId: number, userMessage: string): Promise<string> {
+    if (!Number.isSafeInteger(sessionId) || sessionId <= 0) throw new Error('Phiên trò chuyện không hợp lệ.');
     const pool = getPool();
     const config = await this.getConfig();
     const apiKey = config.api_key || process.env.AI_API_KEY || '';
     const modelName = config.model_name || process.env.AI_MODEL || 'gemini-3-flash-preview';
 
+    // New AI tables have no chat sessions yet. Create the session on first use.
+    await pool.query(
+      'INSERT INTO ai_chat_sessions (id, title) VALUES (?, ?) ON DUPLICATE KEY UPDATE id = id',
+      [sessionId, 'Hội thoại chính']
+    );
     // 1. Lưu tin nhắn của người dùng
     await pool.query(
       'INSERT INTO ai_chat_messages (session_id, role, content) VALUES (?, ?, ?)',
@@ -662,7 +598,6 @@ Dữ liệu tài chính hiện tại của người dùng:
 
     let aiReply = '';
     try {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
       const payload = {
         systemInstruction: {
           parts: [
@@ -676,18 +611,10 @@ ${ragContext}`,
         contents: historyParts,
       };
 
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = (await res.json()) as { error?: { message?: string }; candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
-      if (!res.ok) throw new Error(data.error?.message || 'Lỗi phản hồi Gemini');
+      const data = await geminiRequest(apiKey, `models/${modelName}:generateContent`, payload) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
       aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Xin lỗi, tôi chưa thể trả lời lúc này.';
     } catch (err: unknown) {
-      console.error('Lỗi Gemini Chat:', err);
-      aiReply = `Xin lỗi, có lỗi khi kết nối tới AI: ${(err as Error).message}. Vui lòng kiểm tra lại API Key trong Cài đặt.`;
+      throw new Error(err instanceof Error ? err.message : 'Không kết nối được Gemini.');
     }
 
     // 4. Lưu câu trả lời của AI

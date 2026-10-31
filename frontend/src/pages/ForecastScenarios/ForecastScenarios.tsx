@@ -1,82 +1,67 @@
+import { ScenarioCalculationDetails, type ScenarioCalculation } from './ScenarioCalculationDetails';
 import React, { useState, useEffect } from 'react';
 import {
-  TrendingUp,
   Sliders,
   Sparkles,
-  RefreshCw,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
 } from 'lucide-react';
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  CartesianGrid,
-} from 'recharts';
+import { DailyForecast } from './DailyForecast';
+import { ScenarioNumberInput, type ScenarioNumber } from './ScenarioNumberInput';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
 import { useToast } from '../../components/ui/Toast';
 import { api } from '../../services/api';
-import { formatCurrency } from '../../utils/formatters';
-import type { AiForecast, AiScenario } from '../../types';
+import type { AiScenario } from '../../types';
 
 export const ForecastScenarios: React.FC = () => {
   const toast = useToast();
-  const [loading, setLoading] = useState<boolean>(false);
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
-  const [forecasts, setForecasts] = useState<AiForecast[]>([]);
   const [scenarios, setScenarios] = useState<AiScenario[]>([]);
+  const [scenarioError, setScenarioError] = useState('');
+  const [scenarioStorageReady, setScenarioStorageReady] = useState(false);
 
   // Form kịch bản mô phỏng
   const [scenarioName, setScenarioName] = useState<string>('Mua xe máy trả góp');
   const [scenarioType, setScenarioType] = useState<'large_expense' | 'income_loss' | 'custom'>('large_expense');
-  const [purchasePrice, setPurchasePrice] = useState<number>(35000000);
-  const [downPayment, setDownPayment] = useState<number>(10000000);
-  const [monthlyPayment, setMonthlyPayment] = useState<number>(2500000);
-  const [scenarioMonths, setScenarioMonths] = useState<number>(12);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const [fcRes, scRes] = await Promise.all([
-        api.ai.getForecasts(),
-        api.ai.getScenarios(),
-      ]);
-      if (fcRes.success && fcRes.data) setForecasts(fcRes.data);
-      if (scRes.success && scRes.data) setScenarios(scRes.data);
-    } catch (err) {
-      console.error('Lỗi tải dữ liệu dự báo & kịch bản:', err);
-    } finally {
-      setLoading(false);
-    }
+  const [purchasePrice, setPurchasePrice] = useState<ScenarioNumber>(35000000);
+  const [downPayment, setDownPayment] = useState<ScenarioNumber>(10000000);
+  const [monthlyPayment, setMonthlyPayment] = useState<ScenarioNumber>(2500000);
+  const [scenarioMonths, setScenarioMonths] = useState<ScenarioNumber>(12);
+  const [incomeLossPercent, setIncomeLossPercent] = useState<ScenarioNumber>(30);
+  const [showValidation, setShowValidation] = useState(false);
+  const fieldErrors = {
+    purchasePrice: scenarioType === 'large_expense' && (purchasePrice === '' || purchasePrice <= 0) ? 'Giá trị món đồ phải lớn hơn 0.' : '',
+    downPayment: scenarioType !== 'income_loss' && downPayment === '' ? 'Vui lòng nhập số tiền trả trước (có thể bằng 0).' : scenarioType === 'large_expense' && purchasePrice !== '' && downPayment !== '' && downPayment > purchasePrice ? 'Tiền trả trước không được vượt giá trị món đồ.' : '',
+    monthlyPayment: scenarioType !== 'income_loss' && monthlyPayment === '' ? 'Vui lòng nhập chi phí hàng tháng (có thể bằng 0).' : scenarioType === 'large_expense' && purchasePrice !== '' && downPayment !== '' && downPayment < purchasePrice && monthlyPayment === 0 ? 'Cần nhập khoản trả hàng tháng khi chưa thanh toán đủ.' : '',
+    percent: scenarioType === 'income_loss' && (incomeLossPercent === '' || incomeLossPercent < 1 || incomeLossPercent > 100) ? 'Nhập mức giảm từ 1 đến 100%.' : '',
+    total: scenarioType === 'large_expense' && purchasePrice !== '' && downPayment !== '' && monthlyPayment !== '' && scenarioMonths !== '' && monthlyPayment * scenarioMonths < purchasePrice - downPayment ? 'Tổng trả góp chưa đủ phần giá mua còn lại.' : scenarioType === 'large_expense' && purchasePrice !== '' && downPayment === purchasePrice && Number(monthlyPayment) > 0 ? 'Đã trả đủ giá mua; khoản trả góp hàng tháng phải bằng 0.' : scenarioType === 'custom' && downPayment === 0 && monthlyPayment === 0 ? 'Kế hoạch cần ít nhất một khoản chi lớn hơn 0.' : '',
+    months: scenarioMonths === '' || scenarioMonths < 1 ? 'Thời hạn phải từ 1 đến 600 tháng.' : '',
   };
 
   useEffect(() => {
-    loadData();
+    let active = true;
+    api.ai.getScenarios().then(result => {
+      if (!active) return;
+      if (result.success && result.data) {
+        setScenarios(result.data);
+        setScenarioStorageReady(true);
+      }
+      else setScenarioError(result.error || 'Không tải được kịch bản.');
+    }).catch(() => { if (active) setScenarioError('Không tải được kịch bản. Kiểm tra kết nối database.'); });
+    return () => { active = false; };
   }, []);
 
-  // Chạy cập nhật dự báo dòng tiền AI
-  const handleGenerateForecast = async () => {
-    setLoading(true);
-    try {
-      const res = await api.ai.generateForecast();
-      if (res.success && res.data) {
-        setForecasts(res.data);
-        toast.success('AI đã hoàn tất tính toán dự báo dòng tiền 3 tháng tới!');
-      } else {
-        toast.error('Lỗi dự báo', res.error || 'Vui lòng kiểm tra lại');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Chạy mô phỏng kịch bản What-If
   const handleRunScenario = async () => {
+    if (!scenarioStorageReady) return;
+    setShowValidation(true);
+    if (Object.values(fieldErrors).some(Boolean)) {
+      toast.error('Thông tin chưa hợp lệ', 'Vui lòng kiểm tra các ô được đánh dấu.');
+      return;
+    }
     if (!scenarioName.trim()) {
       toast.error('Vui lòng nhập tên kịch bản');
       return;
@@ -86,9 +71,10 @@ export const ForecastScenarios: React.FC = () => {
       const res = await api.ai.runScenario({
         name: scenarioName,
         scenario_type: scenarioType,
-        expenseAmount: downPayment,
-        monthlyCost: monthlyPayment,
-        months: scenarioMonths,
+        ...(scenarioType === 'large_expense' ? { purchasePrice: Number(purchasePrice) } : {}),
+        ...(scenarioType === 'income_loss' ? { incomeLossPercent: Number(incomeLossPercent) } : {}),
+        ...(scenarioType !== 'income_loss' ? { expenseAmount: Number(downPayment), monthlyCost: Number(monthlyPayment) } : {}),
+        months: Number(scenarioMonths),
       });
       if (res.success && res.data) {
         setScenarios([res.data, ...scenarios]);
@@ -96,206 +82,76 @@ export const ForecastScenarios: React.FC = () => {
       } else {
         toast.error('Mô phỏng thất bại', res.error || 'Vui lòng thử lại');
       }
+    } catch {
+      toast.error('Mô phỏng thất bại', 'Không kết nối được backend. Vui lòng thử lại.');
     } finally {
       setIsSimulating(false);
     }
   };
 
-  const chartData = forecasts.map((f) => ({
-    period: f.forecast_period,
-    'Số dư dự kiến': f.predicted_ending_balance,
-    'Kịch bản thận trọng': f.lower_bound_balance,
-    'Kịch bản tích cực': f.upper_bound_balance,
-    'Thu nhập dự tính': f.predicted_income,
-    'Chi tiêu dự tính': f.predicted_expense,
-  }));
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Banner Giới thiệu Module */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%)',
-          borderRadius: '16px',
-          padding: '22px 28px',
-          color: '#ffffff',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          boxShadow: '0 8px 24px rgba(2, 132, 199, 0.2)',
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-            <TrendingUp size={24} color="#38bdf8" />
-            <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700 }}>
-              Dự báo Dòng tiền & Mô phỏng Kịch bản (What-If)
-            </h2>
-          </div>
-          <div style={{ color: '#e0f2fe', fontSize: '13px', maxWidth: '640px' }}>
-            Hỗ trợ ra quyết định trước khi mua sắm tài sản lớn hoặc đầu tư, giúp bạn dự báo sức khỏe dòng tiền trong tương lai và hạn chế nguy cơ mất thanh khoản.
-          </div>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+      <DailyForecast />
 
-        <Button
-          variant="secondary"
-          onClick={handleGenerateForecast}
-          isLoading={loading}
-          style={{ backgroundColor: '#ffffff', color: '#0369a1', fontWeight: 600 }}
-        >
-          <RefreshCw size={16} style={{ marginRight: '6px' }} />
-          Cập nhật Dự báo AI
-        </Button>
-      </div>
-
-      {/* PHẦN 1: DỰ BÁO DÒNG TIỀN TƯƠNG LAI (Module 5.3) */}
-      <Card style={{ padding: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <div>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>
-              Biểu đồ Dự báo Số dư & Dòng tiền Tương lai (3 Tháng tới)
-            </h3>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              Mô hình Time-Series kết hợp phân tích chu kỳ chi tiêu và biến động lịch sử
-            </span>
-          </div>
-          <Badge variant="info">Mô hình AI: Time-Series Forecast</Badge>
-        </div>
-
-        {forecasts.length === 0 ? (
+      <Card style={{ padding: '24px 28px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: 'var(--shadow-sm)' }}>
+        {scenarioError && (
           <div
+            role="alert"
             style={{
-              padding: '36px',
-              textAlign: 'center',
-              backgroundColor: '#f8fafc',
+              padding: '12px 16px',
+              backgroundColor: 'var(--color-expense-bg)',
+              color: 'var(--color-expense)',
               borderRadius: '8px',
-              border: '1px dashed #cbd5e1',
+              fontSize: '13px',
+              fontWeight: 500,
+              marginBottom: '16px',
+              border: '1px solid var(--color-expense-border)',
             }}
           >
-            <TrendingUp size={36} color="#94a3b8" style={{ marginBottom: '8px' }} />
-            <div style={{ fontWeight: 600, fontSize: '14px', color: '#475569' }}>
-              Chưa có dữ liệu dự báo dòng tiền
-            </div>
-            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', marginBottom: '14px' }}>
-              Nhấn nút bên dưới để AI tự động phân tích và tạo dự báo cho 3 tháng tới.
-            </div>
-            <Button variant="primary" onClick={handleGenerateForecast} isLoading={loading}>
-              Khởi tạo Dự báo ngay
-            </Button>
+            {scenarioError}
           </div>
-        ) : (
-          <>
-            <div style={{ width: '100%', height: 280, marginTop: '8px' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#2563eb" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorUpper" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey="period" stroke="#64748b" fontSize={12} />
-                  <YAxis
-                    stroke="#64748b"
-                    fontSize={11}
-                    tickFormatter={(v) => `${(v / 1000000).toFixed(0)}Tr`}
-                  />
-                  <Tooltip
-                    formatter={(val: unknown) => [formatCurrency(Number(val)), '']}
-                    contentStyle={{ borderRadius: '8px', border: '1px solid #cbd5e1' }}
-                  />
-                  <Legend />
-                  <Area
-                    type="monotone"
-                    dataKey="Kịch bản tích cực"
-                    stroke="#10b981"
-                    fillOpacity={1}
-                    fill="url(#colorUpper)"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="Số dư dự kiến"
-                    stroke="#2563eb"
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorBalance)"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="Kịch bản thận trọng"
-                    stroke="#f59e0b"
-                    strokeDasharray="4 4"
-                    fill="none"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Bảng số liệu chi tiết các tháng */}
-            <div style={{ marginTop: '20px', overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                    <th style={{ padding: '10px 14px', textAlign: 'left' }}>Kỳ dự báo</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'right' }}>Thu nhập dự kiến</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'right' }}>Chi tiêu dự kiến</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'right' }}>Số dư cuối kỳ</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'right' }}>Khoảng tin cậy</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {forecasts.map((f) => (
-                    <tr key={f.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '12px 14px', fontWeight: 600 }}>{f.forecast_period}</td>
-                      <td style={{ padding: '12px 14px', textAlign: 'right', color: '#16a34a' }}>
-                        +{formatCurrency(f.predicted_income)}
-                      </td>
-                      <td style={{ padding: '12px 14px', textAlign: 'right', color: '#dc2626' }}>
-                        -{formatCurrency(f.predicted_expense)}
-                      </td>
-                      <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#2563eb' }}>
-                        {formatCurrency(f.predicted_ending_balance)}
-                      </td>
-                      <td style={{ padding: '12px 14px', textAlign: 'right', fontSize: '12px', color: '#64748b' }}>
-                        {formatCurrency(f.lower_bound_balance)} ~ {formatCurrency(f.upper_bound_balance)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
         )}
-      </Card>
 
-      {/* PHẦN 2: MÔ PHỎNG KỊCH BẢN GIẢ ĐỊNH WHAT-IF (Module 5.4) */}
-      <Card style={{ padding: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-          <Sliders size={20} color="var(--color-primary)" />
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>
-            Công cụ Mô phỏng Kịch bản Giả định (What-If Analysis)
-          </h3>
-        </div>
-        <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '18px' }}>
-          Giả định các quyết định tài chính tương lai (mua xe trả góp, chuẩn bị mua sắm đồ đạc, phòng ngừa giảm thu nhập) để AI đánh giá độ an toàn trước khi hành động.
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                backgroundColor: 'var(--color-primary-light)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--color-primary)',
+              }}
+            >
+              <Sliders size={20} />
+            </div>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+                Công cụ Mô phỏng Kịch bản Giả định (What-If Analysis)
+              </h3>
+              <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                Nhập giả định để so sánh số dư và xem từng bước tính theo từng loại kịch bản.
+              </p>
+            </div>
+          </div>
+          <Badge variant="info">Mô phỏng Độ nhạy</Badge>
         </div>
 
         {/* Form thiết lập kịch bản */}
         <div
           style={{
-            backgroundColor: '#f8fafc',
-            padding: '18px 20px',
-            borderRadius: '12px',
-            border: '1px solid #e2e8f0',
-            marginBottom: '20px',
+            backgroundColor: '#F8FAFC',
+            padding: '22px 24px',
+            borderRadius: '14px',
+            border: '1px solid #E2E8F0',
+            marginTop: '16px',
+            marginBottom: '28px',
           }}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
             <Input
               label="Tên kịch bản kế hoạch"
               value={scenarioName}
@@ -304,7 +160,7 @@ export const ForecastScenarios: React.FC = () => {
             />
 
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '6px', color: 'var(--text-primary)' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--text-primary)' }}>
                 Loại kịch bản
               </label>
               <select
@@ -312,12 +168,24 @@ export const ForecastScenarios: React.FC = () => {
                 onChange={(e) => setScenarioType(e.target.value as 'large_expense' | 'income_loss' | 'custom')}
                 style={{
                   width: '100%',
-                  height: '38px',
-                  borderRadius: '6px',
-                  border: '1px solid #cbd5e1',
-                  padding: '0 10px',
-                  fontSize: '13px',
-                  backgroundColor: '#ffffff',
+                  height: '40px',
+                  borderRadius: '8px',
+                  border: '1px solid #CBD5E1',
+                  padding: '0 12px',
+                  fontSize: '13.5px',
+                  backgroundColor: '#FFFFFF',
+                  color: 'var(--text-primary)',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  transition: 'border-color var(--transition-fast), box-shadow var(--transition-fast)',
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border-focus)';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px var(--ring-focus)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#CBD5E1';
+                  e.currentTarget.style.boxShadow = 'none';
                 }}
               >
                 <option value="large_expense">Mua sắm tài sản lớn / Trả góp</option>
@@ -326,41 +194,62 @@ export const ForecastScenarios: React.FC = () => {
               </select>
             </div>
 
-            <Input
+            {scenarioType === 'large_expense' && <>
+            <ScenarioNumberInput
               label="Tổng giá trị món đồ (VND)"
-              type="number"
+              money
               value={purchasePrice}
-              onChange={(e) => setPurchasePrice(Number(e.target.value))}
+              onChange={setPurchasePrice}
+              error={showValidation ? fieldErrors.purchasePrice : undefined}
             />
+            </>}
+            {scenarioType !== 'income_loss' && <>
 
-            <Input
-              label="Số tiền trả trước / thanh toán ngay (VND)"
-              type="number"
+            <ScenarioNumberInput
+              label={scenarioType === 'large_expense' ? 'Số tiền trả trước (VND)' : 'Khoản chi ban đầu (VND)'}
+              money
               value={downPayment}
-              onChange={(e) => setDownPayment(Number(e.target.value))}
+              onChange={setDownPayment}
+              error={showValidation ? fieldErrors.downPayment : undefined}
             />
 
-            <Input
-              label="Chi phí phát sinh hàng tháng (VND)"
-              type="number"
+            <ScenarioNumberInput
+              label={scenarioType === 'large_expense' ? 'Khoản trả góp mỗi tháng (VND)' : 'Khoản chi bổ sung mỗi tháng (VND)'}
+              money
               value={monthlyPayment}
-              onChange={(e) => setMonthlyPayment(Number(e.target.value))}
+              onChange={setMonthlyPayment}
+              error={showValidation ? fieldErrors.monthlyPayment : undefined}
             />
 
-            <Input
+            </>}
+            {scenarioType === 'income_loss' && <ScenarioNumberInput
+              label="Mức giảm thu nhập (%)" value={incomeLossPercent} onChange={setIncomeLossPercent} max={100}
+              helperText="Nhập tỷ lệ giảm từ 1 đến 100%" error={showValidation ? fieldErrors.percent : undefined}
+            />}
+
+            <ScenarioNumberInput
               label="Thời hạn thực hiện (tháng)"
-              type="number"
               value={scenarioMonths}
-              onChange={(e) => setScenarioMonths(Number(e.target.value))}
+              onChange={setScenarioMonths}
+              error={showValidation ? fieldErrors.months : undefined}
             />
           </div>
 
-          <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+          {showValidation && fieldErrors.total && <p role="alert" style={{ color: 'var(--color-expense)', fontSize: 13 }}>{fieldErrors.total}</p>}
+          {scenarioType === 'large_expense' && <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Nhập khoản trả góp theo báo giá của bên cho vay. Tổng thanh toán = trả trước + khoản trả mỗi tháng × số tháng; chênh lệch với giá mua có thể gồm lãi/phí, không dùng để suy ra lãi suất.</p>}
+          <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px' }}>
             <Button
               variant="primary"
+              size="md"
               icon={<Sparkles size={16} />}
               onClick={handleRunScenario}
+              disabled={!scenarioStorageReady}
               isLoading={isSimulating}
+              style={{
+                boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
+                padding: '10px 22px',
+                fontSize: '14px',
+              }}
             >
               Chạy Mô phỏng & Đánh giá Rủi ro
             </Button>
@@ -368,55 +257,115 @@ export const ForecastScenarios: React.FC = () => {
         </div>
 
         {/* Danh sách các kịch bản đã mô phỏng */}
-        <h4 style={{ margin: '16px 0 12px 0', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
-          Các kịch bản đã phân tích ({scenarios.length})
-        </h4>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+          <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>Các kịch bản đã phân tích</span>
+            <span
+              style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                color: 'var(--text-muted)',
+                backgroundColor: '#F1F5F9',
+                padding: '2px 8px',
+                borderRadius: '9999px',
+              }}
+            >
+              {scenarios.length}
+            </span>
+          </h4>
+        </div>
 
         {scenarios.length === 0 ? (
-          <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
-            Chưa có kịch bản mô phỏng nào. Hãy nhập thông tin phía trên để bắt đầu thử nghiệm.
+          <div
+            style={{
+              padding: '36px',
+              textAlign: 'center',
+              color: 'var(--text-muted)',
+              fontSize: '13.5px',
+              backgroundColor: '#F8FAFC',
+              borderRadius: '12px',
+              border: '1px dashed #E2E8F0',
+            }}
+          >
+            Chưa có kịch bản mô phỏng nào. Hãy nhập thông số phía trên và bấm &quot;Chạy Mô phỏng&quot; để tính dòng tiền.
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {scenarios.map((sc) => (
-              <div
-                key={sc.id}
-                style={{
-                  backgroundColor: '#ffffff',
-                  padding: '16px 18px',
-                  borderRadius: '10px',
-                  border: '1px solid #e2e8f0',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontWeight: 700, fontSize: '15px', color: '#1e293b' }}>{sc.name}</span>
-                    <Badge variant="info">{sc.scenario_type === 'large_expense' ? 'Mua sắm lớn' : 'Kịch bản tùy chỉnh'}</Badge>
-                  </div>
-                  <span style={{ fontSize: '12px', color: '#94a3b8' }}>
-                    {sc.created_at ? sc.created_at.slice(0, 10) : ''}
-                  </span>
-                </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {scenarios.map((sc) => {
+              const calculation = sc.simulation_result.calculation as ScenarioCalculation | undefined;
+              const current = calculation?.version === 1;
+              const isWarning = current && calculation.status !== 'stable';
+              const isSuccess = current && calculation.status === 'stable';
 
+              const cardBorder = isWarning ? '#FDE68A' : isSuccess ? '#A7F3D0' : '#BAE6FD';
+              const cardBg = isWarning ? 'linear-gradient(180deg, #FFFDF5 0%, #FFFFFF 100%)' : isSuccess ? 'linear-gradient(180deg, #F0FDF4 0%, #FFFFFF 100%)' : 'linear-gradient(180deg, #F0F9FF 0%, #FFFFFF 100%)';
+              const badgeVariant = isWarning ? 'warning' : isSuccess ? 'income' : 'info';
+              const statusText = !current ? 'Kết quả cũ' : isWarning ? 'Cảnh báo dòng tiền' : 'Không âm cuối tháng';
+
+              return (
                 <div
+                  key={sc.id}
+                  className="interactive-card"
                   style={{
-                    backgroundColor: '#f8fafc',
-                    padding: '12px 14px',
-                    borderRadius: '8px',
-                    borderLeft: '4px solid #0284c7',
-                    fontSize: '13px',
-                    lineHeight: 1.5,
-                    color: '#334155',
+                    backgroundColor: '#FFFFFF',
+                    padding: '20px 22px',
+                    borderRadius: '14px',
+                    border: '1px solid #E2E8F0',
+                    boxShadow: 'var(--shadow-xs)',
                   }}
                 >
-                  <strong style={{ color: '#0369a1', display: 'block', marginBottom: '4px' }}>
-                    💡 Đánh giá từ Trí tuệ Nhân tạo AI:
-                  </strong>
-                  {sc.ai_evaluation}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)' }}>
+                        {sc.name}
+                      </span>
+                      <Badge variant="info">
+                        {sc.scenario_type === 'large_expense' ? 'Mua trả góp' : sc.scenario_type === 'income_loss' ? 'Giảm thu nhập' : sc.scenario_type === 'custom' ? 'Chi tiêu tùy chỉnh' : 'Loại cũ'}
+                      </Badge>
+                      <Badge variant={badgeVariant}>
+                        {statusText}
+                      </Badge>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                      <Clock size={14} />
+                      <span>{sc.created_at ? sc.created_at.slice(0, 10) : 'Gần đây'}</span>
+                    </div>
+                  </div>
+
+                  {/* Khối Đánh giá của AI */}
+                  <div
+                    style={{
+                      background: cardBg,
+                      padding: '16px 18px',
+                      borderRadius: '12px',
+                      border: `1px solid ${cardBorder}`,
+                      borderLeft: isWarning ? '4px solid #D97706' : isSuccess ? '4px solid #059669' : '4px solid #0284C7',
+                      fontSize: '13.5px',
+                      lineHeight: 1.6,
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                      {isWarning ? (
+                        <AlertTriangle size={17} color="#D97706" />
+                      ) : isSuccess ? (
+                        <CheckCircle2 size={17} color="#059669" />
+                      ) : (
+                        <Sparkles size={17} color="#0284C7" />
+                      )}
+                      <strong style={{ color: isWarning ? '#B45309' : isSuccess ? '#047857' : '#0369A1', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                        Đánh giá theo dòng tiền đã tính
+                      </strong>
+                    </div>
+                    <div style={{ fontWeight: 500 }}>
+                      {current ? sc.ai_evaluation : 'Kết quả cũ chưa có bảng tính kiểm chứng. Hãy chạy lại với loại kịch bản và thông số mong muốn.'}
+                    </div>
+                  </div>
+                  <ScenarioCalculationDetails calculation={calculation} />
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </Card>

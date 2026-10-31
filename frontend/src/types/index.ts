@@ -131,6 +131,7 @@ export interface RecurringTransaction {
 
 // API Response format
 export interface ApiResponse<T = unknown> {
+  code?: string;
   success: boolean;
   data?: T;
   error?: string;
@@ -233,6 +234,24 @@ export interface AiForecast {
   upper_bound_balance: number;
   model_name: string;
   created_at?: string;
+}
+
+export interface DailyBaseline {
+  createdAt: string;
+  asOf: string;
+  modelName: string;
+  confidence: 'Thấp';
+  historyDays: number;
+  openingBalance: number;
+  dataRange: { start: string; end: string };
+  points: Array<{ date: string; income: number; expense: number; balance: number }>;
+}
+
+export interface AiConnectionStatus {
+  connected: boolean;
+  model: string;
+  models: string[];
+  message: string;
 }
 
 export interface AiScenario {

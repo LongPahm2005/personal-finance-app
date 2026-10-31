@@ -196,19 +196,19 @@ export const Dashboard: React.FC = () => {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
       {/* 1. Stat KPI Cards */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
           gap: '16px',
         }}
       >
         <StatCard
-          title="TỔNG SỐ DƯ"
+          title="TỔNG SỐ DƯ KHẢ DỤNG"
           value={formatCurrency(summary?.totalBalance)}
-          subtitle="Tổng tiền hiện có"
+          subtitle="Tổng tiền trên toàn hệ thống ví"
           icon={<Coins size={20} />}
           iconBg="var(--color-primary-light)"
           iconColor="var(--color-primary)"
@@ -235,7 +235,7 @@ export const Dashboard: React.FC = () => {
         <StatCard
           title="DÒNG TIỀN RÒNG"
           value={formatCurrency(summary?.netCashFlow)}
-          subtitle={summary && summary.netCashFlow >= 0 ? 'Thặng dư ngân sách' : 'Thâm hụt chi tiêu'}
+          subtitle={summary && summary.netCashFlow >= 0 ? 'Thặng dư dòng tiền dương' : 'Thâm hụt chi tiêu'}
           icon={<TrendingUp size={20} />}
           iconBg={summary && summary.netCashFlow >= 0 ? 'var(--color-income-bg)' : 'var(--color-expense-bg)'}
           iconColor={summary && summary.netCashFlow >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}
@@ -246,44 +246,50 @@ export const Dashboard: React.FC = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
           gap: '16px',
         }}
       >
-        <Card style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Card style={{ padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '14px', border: '1px solid #E2E8F0', boxShadow: 'var(--shadow-xs)' }}>
           <div>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>CÔNG NỢ CẦN THU</span>
-            <div className="font-number" style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-income)', marginTop: '2px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>CÔNG NỢ CẦN THU</span>
+            <div className="font-number" style={{ fontSize: '19px', fontWeight: 800, color: 'var(--color-income)', marginTop: '4px', letterSpacing: '-0.02em' }}>
               {formatCurrency(summary?.totalReceivable)}
             </div>
           </div>
-          <Scale size={20} color="var(--color-income)" />
+          <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: 'var(--color-income-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Scale size={20} color="var(--color-income)" />
+          </div>
         </Card>
 
-        <Card style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Card style={{ padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '14px', border: '1px solid #E2E8F0', boxShadow: 'var(--shadow-xs)' }}>
           <div>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>CÔNG NỢ PHẢI TRẢ</span>
-            <div className="font-number" style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-expense)', marginTop: '2px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>CÔNG NỢ PHẢI TRẢ</span>
+            <div className="font-number" style={{ fontSize: '19px', fontWeight: 800, color: 'var(--color-expense)', marginTop: '4px', letterSpacing: '-0.02em' }}>
               {formatCurrency(summary?.totalPayable)}
             </div>
           </div>
-          <Scale size={20} color="var(--color-expense)" />
+          <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: 'var(--color-expense-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Scale size={20} color="var(--color-expense)" />
+          </div>
         </Card>
 
-        <Card style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Card style={{ padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '14px', border: '1px solid #E2E8F0', boxShadow: 'var(--shadow-xs)' }}>
           <div>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>QUỸ TIẾT KIỆM TÍCH LŨY</span>
-            <div className="font-number" style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-primary)', marginTop: '2px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>QUỸ TIẾT KIỆM TÍCH LŨY</span>
+            <div className="font-number" style={{ fontSize: '19px', fontWeight: 800, color: 'var(--color-primary)', marginTop: '4px', letterSpacing: '-0.02em' }}>
               {formatCurrency(summary?.totalSavings)}
             </div>
           </div>
-          <PiggyBank size={20} color="var(--color-primary)" />
+          <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <PiggyBank size={20} color="var(--color-primary)" />
+          </div>
         </Card>
       </div>
 
       {/* 2. Urgent Alerts (Overdue Debts or Budget Alerts) */}
       {(upcomingDebts.some(d => d.status === 'overdue') || budgetAlerts.length > 0) && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {upcomingDebts
             .filter(d => d.status === 'overdue')
             .map(debt => (
@@ -291,18 +297,19 @@ export const Dashboard: React.FC = () => {
                 key={`overdue-${debt.id}`}
                 style={{
                   backgroundColor: 'var(--color-expense-bg)',
-                  border: '1px solid #FCA5A5',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '12px 18px',
+                  border: '1px solid var(--color-expense-border)',
+                  borderRadius: '12px',
+                  padding: '14px 18px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   gap: '12px',
+                  boxShadow: 'var(--shadow-xs)',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <AlertTriangle size={18} color="var(--color-expense)" />
-                  <span style={{ fontSize: '13.5px', color: '#991B1B', fontWeight: 600 }}>
+                  <AlertTriangle size={20} color="var(--color-expense)" />
+                  <span style={{ fontSize: '13.5px', color: '#991B1B', fontWeight: 600, lineHeight: 1.5 }}>
                     Cảnh báo quá hạn: Khoản {debt.type === 'receivable' ? 'phải thu từ' : 'phải trả cho'}{' '}
                     <strong>{debt.person_name}</strong> số tiền{' '}
                     <strong>{formatCurrency(debt.remaining_amount)}</strong> đã quá hạn ngày {formatDate(debt.due_date)}.
@@ -319,18 +326,19 @@ export const Dashboard: React.FC = () => {
               key={`budget-${b.budget.id}`}
               style={{
                 backgroundColor: b.is_over_budget ? 'var(--color-expense-bg)' : 'var(--color-warning-bg)',
-                border: `1px solid ${b.is_over_budget ? '#FCA5A5' : '#FDE68A'}`,
-                borderRadius: 'var(--radius-md)',
-                padding: '12px 18px',
+                border: `1px solid ${b.is_over_budget ? 'var(--color-expense-border)' : 'var(--color-warning-border)'}`,
+                borderRadius: '12px',
+                padding: '14px 18px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 gap: '12px',
+                boxShadow: 'var(--shadow-xs)',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <AlertTriangle size={18} color={b.is_over_budget ? 'var(--color-expense)' : 'var(--color-warning)'} />
-                <span style={{ fontSize: '13.5px', color: b.is_over_budget ? '#991B1B' : '#92400E', fontWeight: 600 }}>
+                <AlertTriangle size={20} color={b.is_over_budget ? 'var(--color-expense)' : 'var(--color-warning)'} />
+                <span style={{ fontSize: '13.5px', color: b.is_over_budget ? '#991B1B' : '#92400E', fontWeight: 600, lineHeight: 1.5 }}>
                   {b.is_over_budget
                     ? `Ngân sách "${b.budget.name}" đã VƯỢT hạn mức (${b.usage_percent}%)! Đã chi ${formatCurrency(b.used_amount)} / ${formatCurrency(b.budget.amount)}.`
                     : `Ngân sách "${b.budget.name}" sắp chạm ngưỡng giới hạn (${b.usage_percent}%).`}
@@ -345,28 +353,47 @@ export const Dashboard: React.FC = () => {
       )}
 
       {/* 2.5 HỖ TRỢ RA QUYẾT ĐỊNH & CẢNH BÁO TÀI CHÍNH TỪ AI (Trọng tâm đề tài) */}
-      <Card style={{ padding: '20px 24px', border: '1px solid #bfdbfe', background: 'linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Sparkles size={20} color="#ffffff" />
+      <Card
+        className="ai-glow-card"
+        style={{
+          padding: '24px 28px',
+          borderRadius: '16px',
+          border: '1px solid #BFDBFE',
+          background: 'linear-gradient(180deg, #F0F9FF 0%, #FFFFFF 100%)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #2563EB 0%, #0284C7 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+              }}
+            >
+              <Sparkles size={22} color="#FFFFFF" />
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#1e3a8a' }}>
-                  Khuyến nghị & Quyết định Tài chính từ AI
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.01em' }}>
+                  Khuyến nghị & Quyết định Tài chính từ AI (DSS)
                 </h3>
                 <Badge variant="income">
                   Sức khỏe: {profile?.financial_health_score ?? 100}/100
                 </Badge>
               </div>
-              <div style={{ fontSize: '12.5px', color: '#475569', marginTop: '2px' }}>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '3px' }}>
                 AI phân tích cơ cấu thu chi, nợ và số dư để gợi ý tối ưu dòng tiền cá nhân
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
             <Button
               size="sm"
               variant="outline"
@@ -391,6 +418,7 @@ export const Dashboard: React.FC = () => {
               icon={<RefreshCw size={14} />}
               onClick={handleGenerateAiRecommendations}
               isLoading={isAiLoading}
+              style={{ boxShadow: '0 2px 8px rgba(37, 99, 235, 0.2)' }}
             >
               Phân tích lại với AI
             </Button>
@@ -432,57 +460,73 @@ export const Dashboard: React.FC = () => {
         {recommendations.filter(r => r.status === 'pending').length === 0 ? (
           <div
             style={{
-              padding: '18px',
+              padding: '24px',
               textAlign: 'center',
-              backgroundColor: '#ffffff',
-              borderRadius: '8px',
-              border: '1px dashed #cbd5e1',
-              color: '#64748b',
-              fontSize: '13px',
+              backgroundColor: '#FFFFFF',
+              borderRadius: '12px',
+              border: '1px dashed #CBD5E1',
+              color: 'var(--text-secondary)',
+              fontSize: '13.5px',
             }}
           >
-            <CheckCircle size={20} color="#16a34a" style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
-            Tài chính của bạn hiện tại đang an toàn và ổn định. Nhấn <strong>"Phân tích lại với AI"</strong> để AI rà soát sâu các dữ liệu thu chi mới nhất.
+            <CheckCircle size={20} color="var(--color-income)" style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} />
+            Tài chính của bạn hiện tại đang an toàn và ổn định. Nhấn <strong>&quot;Phân tích lại với AI&quot;</strong> để AI rà soát sâu các dữ liệu thu chi mới nhất.
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
             {recommendations
               .filter(r => r.status === 'pending')
               .slice(0, 4)
               .map(rec => (
                 <div
                   key={rec.id}
+                  className="interactive-card"
                   style={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '10px',
-                    padding: '14px 16px',
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '12px',
+                    padding: '18px 20px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                    boxShadow: 'var(--shadow-xs)',
                   }}
                 >
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-                      <span style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', gap: '8px' }}>
+                      <span style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                         {rec.title}
                       </span>
                       <Badge variant={rec.confidence_score >= 0.85 ? 'income' : 'info'}>
-                        {rec.confidence_score ? `Độ tin cậy ${Math.round(rec.confidence_score * 100)}%` : 'KHUYẾN NGHỊ'}
+                        {rec.confidence_score ? `Tin cậy ${Math.round(rec.confidence_score * 100)}%` : 'KHUYẾN NGHỊ'}
                       </Badge>
                     </div>
-                    <p style={{ margin: '0 0 10px 0', fontSize: '12.5px', color: '#475569', lineHeight: 1.45 }}>
+                    <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
                       {rec.summary}
                     </p>
                     {rec.potential_savings > 0 && (
-                      <div style={{ fontSize: '11.5px', color: '#0369a1', fontWeight: 600, marginBottom: '12px' }}>
-                        🎯 Tiết kiệm tiềm năng: {formatCurrency(rec.potential_savings)}
+                      <div
+                        style={{
+                          fontSize: '12px',
+                          color: '#0369A1',
+                          fontWeight: 600,
+                          backgroundColor: '#F0F9FF',
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid #BAE6FD',
+                          marginBottom: '14px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                        }}
+                      >
+                        <span>🎯 Tiết kiệm tiềm năng:</span>
+                        <strong className="font-number" style={{ fontSize: '13px' }}>{formatCurrency(rec.potential_savings)}</strong>
                       </div>
                     )}
                   </div>
 
-                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', borderTop: '1px solid #F1F5F9', paddingTop: '12px', marginTop: '6px' }}>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -496,6 +540,7 @@ export const Dashboard: React.FC = () => {
                       variant="primary"
                       icon={<Zap size={14} />}
                       onClick={() => handleApplyRecommendation(rec.id)}
+                      style={{ boxShadow: '0 2px 6px rgba(37, 99, 235, 0.2)' }}
                     >
                       Áp dụng quyết định
                     </Button>

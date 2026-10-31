@@ -44,7 +44,7 @@ export async function ensureDatabaseInitialized(): Promise<void> {
       console.log(`[Auto-Init] Phát hiện máy mới chưa có bảng trong database [${database}]. Đang tự động nạp 17 bảng...`);
       await initializeSchema(serverConn);
     } else {
-      console.log(`[Auto-Init] Database [${database}] đã có sẵn 17 bảng. Bỏ qua bước tạo bảng.`);
+      console.log(`[Auto-Init] Database [${database}] đã có bảng nghiệp vụ. Giữ nguyên schema hiện có.`);
     }
   } catch (err) {
     console.error('[Auto-Init Error] Không thể tự động kiểm tra/tạo database:', err);
