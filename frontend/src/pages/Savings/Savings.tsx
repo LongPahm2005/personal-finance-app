@@ -11,6 +11,7 @@ import { useToast } from '../../components/ui/Toast';
 import { api } from '../../services/api';
 import { formatCurrency } from '../../utils/formatters';
 import { SavingGoal } from '../../types';
+import { AiRecommendations } from './AiRecommendations';
 
 export const Savings: React.FC = () => {
   const toast = useToast();
@@ -130,6 +131,8 @@ export const Savings: React.FC = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <StatCard title="TỔNG MỤC TIÊU" value={String(goals.length)} subtitle="Các mục tiêu tiết kiệm đang hoạt động" icon={<PiggyBank size={20} />} iconBg="var(--color-primary-light)" iconColor="var(--color-primary)" />
+
+      {goals.some(goal => goal.status === 'active') && <AiRecommendations goals={goals.filter(goal => goal.status === 'active')} />}
 
       <Card style={{ padding: '16px 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>

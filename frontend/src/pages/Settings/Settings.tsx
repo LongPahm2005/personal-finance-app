@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Database, Download, ShieldCheck, FileText, Sparkles, Check, Save, RotateCcw } from 'lucide-react';
+import { Database, Download, ShieldCheck, FileText, Sparkles, Check, Save, RotateCcw, FolderOpen } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useToast } from '../../components/ui/Toast';
 import { api } from '../../services/api';
 
@@ -41,6 +41,8 @@ const availableModels = [
 export const Settings: React.FC = () => {
   const toast = useToast();
   const [backupPath, setBackupPath] = useState('');
+  const [lastBackupPath, setLastBackupPath] = useState('');
+  const [isRestoreConfirmOpen, setIsRestoreConfirmOpen] = useState(false);
   const [dbStatus, setDbStatus] = useState<{ success: boolean; message: string } | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
@@ -110,11 +112,40 @@ export const Settings: React.FC = () => {
     setIsRunning(true);
     try {
       const res = await api.system.backupDb(backupPath || undefined);
-      if (res.success) {
-        toast.success('Sao lưu dữ liệu thành công');
+      if (res.success && res.data) {
+        setLastBackupPath(res.data.filePath);
+        toast.success('Đã sao lưu dữ liệu', res.data.filePath);
       } else {
         toast.error('Sao lưu thất bại', res.error || res.message || 'Vui lòng thử lại');
       }
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  const handleChooseBackupFolder = async () => {
+    try {
+      const res = await api.system.chooseBackupFolder();
+      if (res.success && res.data) setBackupPath(res.data.folderPath);
+    } catch (error) {
+      toast.error('Không thể chọn thư mục', (error as Error).message);
+    }
+  };
+
+  const handleRestore = async () => {
+    setIsRunning(true);
+    try {
+      const res = await api.system.restoreDb();
+      if (res.success) {
+        setIsRestoreConfirmOpen(false);
+        toast.success('Đã khôi phục dữ liệu', res.data?.message);
+      } else if (res.message?.toLowerCase().includes('hủy')) {
+        setIsRestoreConfirmOpen(false);
+      } else {
+        toast.error('Không thể khôi phục dữ liệu', res.error || res.message || 'Vui lòng thử lại.');
+      }
+    } catch (error) {
+      toast.error('Không thể khôi phục dữ liệu', (error as Error).message);
     } finally {
       setIsRunning(false);
     }
@@ -124,8 +155,10 @@ export const Settings: React.FC = () => {
     setIsRunning(true);
     try {
       const res = await api.system.exportData();
-      if (res.success) {
-        toast.success('Xuất file CSV thành công');
+      if (res.success && res.data?.filePath) {
+        toast.success('Đã lưu file CSV', res.data.filePath);
+      } else if (res.success) {
+        toast.info('Đã hủy xuất file');
       } else {
         toast.error('Xuất dữ liệu thất bại', res.error || res.message || 'Vui lòng thử lại');
       }
@@ -142,7 +175,7 @@ export const Settings: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Sparkles size={24} color="#f59e0b" />
             <div>
-              <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Cấu hình Mô hình Trí tuệ Nhân tạo (Module 6.1)</h3>
+              <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Mô hình AI</h3>
               <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
                 Tùy chọn mô hình AI phù hợp với mục đích phân tích tài chính và tư vấn của bạn
               </div>
@@ -278,63 +311,92 @@ export const Settings: React.FC = () => {
         </div>
       </Card>
 
-      {/* 6.3 Kiểm tra kết nối & Tiện ích */}
       <Card style={{ padding: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '18px' }}>
           <Database size={22} color="var(--color-primary)" />
-          <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Hệ thống & Cơ sở dữ liệu (Module 6.3)</h3>
+          <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Dữ liệu & Sao lưu</h3>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
           <Card style={{ padding: '16px', backgroundColor: 'var(--bg-primary)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <span style={{ fontWeight: 700 }}>Kết nối MySQL</span>
+              <span style={{ fontWeight: 700 }}>Trạng thái dữ liệu</span>
               <ShieldCheck size={18} color={dbStatus?.success ? 'var(--color-income)' : 'var(--text-muted)'} />
             </div>
             <div style={{ color: 'var(--text-secondary)', marginBottom: '12px', fontSize: '13px' }}>
-              {dbStatus ? dbStatus.message : 'Chưa kiểm tra (Mặc định: MySQL 3306)'}
+              {dbStatus?.success
+                ? 'Ứng dụng đang kết nối và có thể đọc, lưu dữ liệu.'
+                : dbStatus
+                  ? 'Ứng dụng chưa kết nối được với nơi lưu dữ liệu.'
+                  : 'Kiểm tra kết nối để biết dữ liệu có thể đọc và lưu bình thường hay không.'}
             </div>
+            <Badge variant={dbStatus ? (dbStatus.success ? 'income' : 'expense') : 'info'}>
+              {dbStatus ? (dbStatus.success ? 'Đang hoạt động' : 'Cần kiểm tra') : 'Chưa kiểm tra'}
+            </Badge>
+            {dbStatus && <details style={{ marginTop: '12px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+              <summary style={{ cursor: 'pointer' }}>Thông tin kỹ thuật</summary>
+              <div style={{ marginTop: '6px', overflowWrap: 'anywhere' }}>{dbStatus.message}</div>
+            </details>}
+            <div style={{ marginTop: '12px' }} />
             <Button variant="secondary" onClick={handleTestDb} isLoading={isRunning}>
-              Kiểm tra kết nối
+              Kiểm tra lại
             </Button>
           </Card>
 
           <Card style={{ padding: '16px', backgroundColor: 'var(--bg-primary)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <span style={{ fontWeight: 700 }}>Xuất dữ liệu</span>
+              <span style={{ fontWeight: 700 }}>Tải giao dịch</span>
               <FileText size={18} color="var(--color-primary)" />
             </div>
             <div style={{ color: 'var(--text-secondary)', marginBottom: '12px', fontSize: '13px' }}>
-              Xuất toàn bộ báo cáo giao dịch sang file CSV/Excel để phân tích bên ngoài.
+              Tải danh sách giao dịch thành file CSV. Bạn có thể mở file này bằng Excel.
             </div>
             <Button variant="secondary" onClick={handleExport} isLoading={isRunning}>
-              Xuất CSV
+              Tải file CSV
             </Button>
           </Card>
         </div>
-      </Card>
 
-      {/* 6.2 Sao lưu dữ liệu */}
-      <Card style={{ padding: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '18px' }}>
-          <Database size={22} color="var(--color-primary)" />
-          <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Sao lưu dữ liệu cá nhân (Module 6.2)</h3>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '520px' }}>
-          <Input
-            label="Đường dẫn thư mục lưu backup"
-            value={backupPath}
-            onChange={(e) => setBackupPath(e.target.value)}
-            placeholder="D:/backup/personal-finance (để trống sẽ lưu vào Documents)"
-          />
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <Button icon={<Download size={16} />} onClick={handleBackup} isLoading={isRunning}>
-              Sao lưu MySQL Database
+        <div style={{ marginTop: '18px', padding: '16px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+            <Database size={19} color="var(--color-primary)" />
+            <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 700 }}>Sao lưu dữ liệu tài chính</h4>
+          </div>
+          <p style={{ margin: '0 0 12px', color: 'var(--text-secondary)', fontSize: '13px' }}>
+            Lưu bản sao của ví, giao dịch, ngân sách, công nợ, mục tiêu tiết kiệm và giao dịch định kỳ để dùng khi cần khôi phục.
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '12px' }}>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+              {backupPath ? `Nơi lưu: ${backupPath}` : 'Nơi lưu mặc định: thư mục Documents'}
+            </span>
+            <Button variant="secondary" size="sm" icon={<FolderOpen size={15} />} onClick={handleChooseBackupFolder} disabled={isRunning}>
+              Chọn thư mục
             </Button>
           </div>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <Button icon={<Download size={16} />} onClick={handleBackup} isLoading={isRunning}>
+              Sao lưu ngay
+            </Button>
+            <Button variant="outline" icon={<RotateCcw size={16} />} onClick={() => setIsRestoreConfirmOpen(true)} disabled={isRunning}>
+              Khôi phục từ bản sao lưu
+            </Button>
+          </div>
+          {lastBackupPath && <div style={{ marginTop: '10px', color: 'var(--color-income)', fontSize: '12px', overflowWrap: 'anywhere' }}>
+            Bản sao lưu gần nhất: {lastBackupPath}
+          </div>}
         </div>
       </Card>
+
+      <ConfirmDialog
+        isOpen={isRestoreConfirmOpen}
+        onClose={() => setIsRestoreConfirmOpen(false)}
+        onConfirm={handleRestore}
+        title="Khôi phục dữ liệu?"
+        message="Thao tác này sẽ thay thế ví, giao dịch, ngân sách, công nợ, mục tiêu tiết kiệm và giao dịch định kỳ hiện tại bằng dữ liệu trong bản sao lưu. Hãy chắc chắn bạn đã sao lưu dữ liệu hiện tại trước khi tiếp tục."
+        confirmText="Tiếp tục chọn file"
+        cancelText="Hủy"
+        isLoading={isRunning}
+      />
     </div>
   );
 };

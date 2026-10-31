@@ -30,6 +30,10 @@ export const api = {
       if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
       return window.api.system.testDb();
     },
+    chooseBackupFolder: async (): Promise<ApiResponse<{ folderPath: string }>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.system.chooseBackupFolder() as Promise<ApiResponse<{ folderPath: string }>>;
+    },
     backupDb: async (targetPath?: string): Promise<ApiResponse<{ filePath: string }>> => {
       if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
       return window.api.system.backupDb(targetPath) as Promise<ApiResponse<{ filePath: string }>>;
@@ -362,6 +366,13 @@ export const api = {
     generateRecommendations: async (): Promise<ApiResponse<AiRecommendation[]>> => {
       if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
       return window.api.ai.generateRecommendations() as Promise<ApiResponse<AiRecommendation[]>>;
+    },
+    generateSavingsRecommendations: async (goals: Array<{
+      id: number; name: string; target_amount: number; current_amount: number;
+      target_date: string | null; description: string | null;
+    }>): Promise<ApiResponse<AiRecommendation[]>> => {
+      if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
+      return window.api.ai.generateSavingsRecommendations(goals) as Promise<ApiResponse<AiRecommendation[]>>;
     },
     applyRecommendation: async (id: number): Promise<ApiResponse<void>> => {
       if (!window.api) return { success: false, error: 'Electron API không khả dụng.' };
