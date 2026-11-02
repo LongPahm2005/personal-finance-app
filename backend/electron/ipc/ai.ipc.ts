@@ -76,6 +76,22 @@ export function registerAiIpc(): void {
     }
   });
 
+  ipcMain.handle('ai:generateSavingsRecommendations', async (_, goals: Array<{
+    id: number;
+    name: string;
+    target_amount: number;
+    current_amount: number;
+    target_date: string | null;
+    description: string | null;
+  }>) => {
+    try {
+      const data = await aiService.generateSavingsRecommendations(goals);
+      return { success: true, data };
+    } catch (err: unknown) {
+      return { success: false, error: (err as Error).message };
+    }
+  });
+
   ipcMain.handle('ai:applyRecommendation', async (_, id: number) => {
     try {
       await aiService.applyRecommendation(id);

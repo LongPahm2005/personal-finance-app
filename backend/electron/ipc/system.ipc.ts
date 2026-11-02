@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron';
+import { dialog, ipcMain } from 'electron';
 import { testConnection } from '../database/connection';
 import { BackupService } from '../services/backup.service';
 
@@ -7,6 +7,15 @@ export function registerSystemIpc(): void {
 
   ipcMain.handle('system:testDb', async () => {
     return await testConnection();
+  });
+
+  ipcMain.handle('system:chooseBackupFolder', async () => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      title: 'Chọn thư mục lưu bản sao lưu',
+      properties: ['openDirectory', 'createDirectory'],
+    });
+    if (canceled || filePaths.length === 0) return { success: false, canceled: true };
+    return { success: true, data: { folderPath: filePaths[0] } };
   });
 
   ipcMain.handle('system:backupDb', async (_, targetFolder?: string) => {

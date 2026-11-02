@@ -80,8 +80,8 @@ export const Reports: React.FC = () => {
                 <YAxis tickFormatter={value => `${Math.round(value / 1000000)}M`} />
                 <Tooltip formatter={(value) => formatCurrency(Number(value ?? 0))} />
                 <Legend />
-                <Bar dataKey="income" fill="var(--color-income)" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="expense" fill="var(--color-expense)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="income" name="Thu nhập" fill="var(--color-income)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="expense" name="Chi tiêu" fill="var(--color-expense)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

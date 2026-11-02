@@ -4,6 +4,7 @@ const api = {
   // Database / System
   system: {
     testDb: () => ipcRenderer.invoke('system:testDb'),
+    chooseBackupFolder: () => ipcRenderer.invoke('system:chooseBackupFolder'),
     backupDb: (targetPath?: string) => ipcRenderer.invoke('system:backupDb', targetPath),
     restoreDb: (filePath?: string) => ipcRenderer.invoke('system:restoreDb', filePath),
     exportData: () => ipcRenderer.invoke('system:exportData'),
@@ -102,6 +103,7 @@ const api = {
     evaluateHealthScore: () => ipcRenderer.invoke('ai:evaluateHealthScore'),
     getRecommendations: () => ipcRenderer.invoke('ai:getRecommendations'),
     generateRecommendations: () => ipcRenderer.invoke('ai:generateRecommendations'),
+    generateSavingsRecommendations: (goals: unknown[]) => ipcRenderer.invoke('ai:generateSavingsRecommendations', goals),
     applyRecommendation: (id: number) => ipcRenderer.invoke('ai:applyRecommendation', id),
     dismissRecommendation: (id: number) => ipcRenderer.invoke('ai:dismissRecommendation', id),
     getAnomalies: () => ipcRenderer.invoke('ai:getAnomalies'),

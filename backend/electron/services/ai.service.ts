@@ -579,6 +579,115 @@ Bắt buộc trả về đúng định dạng JSON Array chứa các object sau,
     return this.getRecommendations();
   }
 
+  async generateSavingsRecommendations(goals: Array<{
+    id: number;
+    name: string;
+    target_amount: number;
+    current_amount: number;
+    target_date: string | null;
+    description: string | null;
+  }>): Promise<AiRecommendationModel[]> {
+    if (!goals.length) return [];
+
+    const config = await this.getConfig();
+    const apiKey = config.api_key || process.env.AI_API_KEY || '';
+    const modelName = config.model_name || process.env.AI_MODEL || 'gemini-3-flash-preview';
+    if (!apiKey) throw new Error('Chưa cấu hình API Key AI. Vui lòng vào Cài đặt để nạp Gemini API Key.');
+
+    const now = new Date();
+    const todayUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+    const goalsContext = goals.map(goal => {
+      const targetDate = goal.target_date ? new Date(`${goal.target_date.slice(0, 10)}T00:00:00`) : null;
+      const daysRemaining = targetDate && !Number.isNaN(targetDate.getTime())
+        ? Math.ceil((Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate()) - todayUtc) / 86_400_000)
+        : null;
+      return {
+        ...goal,
+        remaining_amount: Math.max(0, Number(goal.target_amount) - Number(goal.current_amount)),
+        progress_percent: Number(goal.target_amount) > 0
+          ? Math.min(100, Math.round(Number(goal.current_amount) / Number(goal.target_amount) * 100))
+          : 0,
+        days_remaining: daysRemaining,
+      };
+    });
+    const prompt = `Bạn là chuyên gia lập kế hoạch tiết kiệm cá nhân. Dựa trên thông số các mục tiêu tiết kiệm sau, hãy đưa ra 1 đến 3 khuyến nghị thực tế, cụ thể. Coi days_remaining là số ngày thực tế từ hôm nay đến hạn và remaining_amount là số tiền còn thiếu.
+
+Quy tắc:
+- Hãy chủ động xem xét các hướng khác nhau cho mỗi mục tiêu: kế hoạch góp định kỳ nếu còn đủ thời gian; dời hạn và tính lại mức góp để giảm áp lực; hoặc phương án góp một lần/điều chỉnh mục tiêu khi phù hợp. Chỉ dùng những hướng thực sự phù hợp với dữ liệu mục tiêu.
+- Trả 1 đến 3 khuyến nghị riêng biệt. Nếu có từ 2 hướng khả thi khác nhau, hãy nêu ít nhất 2; nếu có 3 hướng có ích, trả đủ 3. Chỉ trả 1 khi dữ liệu chỉ hỗ trợ một phương án hợp lý. Không tách một ý thành nhiều câu hoặc lặp lại cùng một hành động.
+- Mỗi khuyến nghị phải là một lựa chọn rõ ràng, có phép tính cụ thể từ số tiền còn thiếu và thời gian; ghi rõ đánh đổi giữa giữ hạn, dời hạn, góp định kỳ hoặc góp một lần. Không khẳng định người dùng đủ khả năng trả nếu dữ liệu không cho biết.
+- Nếu còn dưới 30 ngày, tuyệt đối không đề xuất mức tiết kiệm hàng tháng. Nêu số tiền cần bổ sung một lần trước hạn; nếu thời gian quá gấp hoặc không thể kết luận khả thi, nói rõ mục tiêu khó/không thể đạt đúng hạn và đề xuất dời hạn hoặc giảm số tiền mục tiêu.
+- Nếu hạn đã qua (days_remaining âm), không đưa ra kế hoạch góp tiền để đạt hạn cũ; đề xuất cập nhật hạn hoặc mục tiêu.
+- Chỉ đề xuất góp hàng tháng khi còn ít nhất 30 ngày, và tính mức góp dựa trên thời gian còn lại.
+- Không bịa thu nhập, khả năng chi trả hay lợi suất. Không gọi số tiền còn thiếu là "tiết kiệm tiềm năng".
+- Nếu không có hạn, đưa ra phương án có điều kiện và nêu rõ rằng hạn chưa được thiết lập.
+
+Trả về đúng JSON array, không markdown:
+${JSON.stringify(goalsContext, null, 2)}
+
+[{
+  "type": "saving_boost",
+  "title": "Tiêu đề ngắn gắn với mục tiêu",
+  "summary": "Khuyến nghị hành động cụ thể",
+  "detailed_reasoning": "Giải thích dựa trên số tiền đích, hiện có, tiến độ và hạn",
+  "potential_savings": 0,
+  "confidence_score": 0.9,
+  "action_payload": { "goal_id": 1, "monthly_contribution": 0 }
+}]`;
+
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: 'application/json', temperature: 0.3 },
+      }),
+    });
+    const responseData = (await response.json()) as { error?: { message?: string }; candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+    if (!response.ok) throw new Error(responseData.error?.message || 'Lỗi gọi API Google Gemini');
+
+    const items = JSON.parse(responseData.candidates?.[0]?.content?.parts?.[0]?.text || '[]') as Array<{
+      type?: string; title?: string; summary?: string; detailed_reasoning?: string;
+      potential_savings?: number; confidence_score?: number; action_payload?: Record<string, unknown>;
+    }>;
+    if (!Array.isArray(items)) throw new Error('AI trả về định dạng khuyến nghị không hợp lệ.');
+
+    const pool = getPool();
+    const recommendations: AiRecommendationModel[] = [];
+    for (const item of items) {
+      if (!item.title || !item.summary) continue;
+      const goalId = Number(item.action_payload?.goal_id);
+      const relatedGoal = goalsContext.find(goal => goal.id === goalId);
+      const potentialSavings = relatedGoal?.days_remaining !== null
+        && relatedGoal?.days_remaining !== undefined
+        && relatedGoal.days_remaining < 30
+        ? 0
+        : Number(item.potential_savings) || 0;
+      const [result] = await pool.query<ResultSetHeader>(
+        `INSERT INTO ai_recommendations (type, title, summary, detailed_reasoning, potential_savings, action_payload, confidence_score)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          'saving_boost', item.title, item.summary, item.detailed_reasoning || item.summary,
+          potentialSavings, JSON.stringify(item.action_payload || {}),
+          Number(item.confidence_score) || 0.9,
+        ]
+      );
+      recommendations.push({
+        id: result.insertId,
+        type: 'saving_boost',
+        title: item.title,
+        summary: item.summary,
+        detailed_reasoning: item.detailed_reasoning || item.summary,
+        potential_savings: potentialSavings,
+        action_payload: item.action_payload || null,
+        status: 'pending',
+        confidence_score: Number(item.confidence_score) || 0.9,
+      });
+    }
+    return recommendations;
+  }
+
   /**
    * Áp dụng khuyến nghị 1-Click (Module 5.5 Actionable Loop)
    */
