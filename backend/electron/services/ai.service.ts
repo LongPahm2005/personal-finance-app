@@ -75,6 +75,67 @@ export class AiService {
   private reportService = new ReportService();
 
   /**
+   * Gọi Gemini API có cơ chế Tự động Thử lại và Fallback sang model ổn định khác
+   * nếu model hiện tại bị Google báo quá tải (503 High Demand / Spikes in demand)
+   */
+  private async callGeminiWithFallback(
+    modelName: string,
+    apiKey: string,
+    payload: Record<string, unknown>
+  ): Promise<{ candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> }> {
+    const candidateModels = Array.from(
+      new Set([
+        modelName,
+        'gemini-3-flash-preview',
+        'gemini-3.5-flash',
+        'gemini-3.8-flash',
+        'gemini-flash-latest',
+      ])
+    );
+
+    let lastError: Error | null = null;
+    for (const model of candidateModels) {
+      try {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const resData = (await response.json()) as { error?: { message?: string; code?: number }; candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+        if (!response.ok) {
+          const errorMsg = resData.error?.message || `HTTP ${response.status}`;
+          if (
+            response.status === 503 ||
+            response.status === 429 ||
+            response.status === 404 ||
+            errorMsg.toLowerCase().includes('high demand') ||
+            errorMsg.toLowerCase().includes('spikes in demand') ||
+            errorMsg.toLowerCase().includes('quota')
+          ) {
+            console.warn(`[Gemini Fallback] Model '${model}' gặp tải cao (${errorMsg}). Tự động thử model dự phòng...`);
+            lastError = new Error(errorMsg);
+            continue;
+          }
+          throw new Error(errorMsg);
+        }
+
+        return resData;
+      } catch (err: unknown) {
+        lastError = err as Error;
+        const msg = (err as Error).message?.toLowerCase() || '';
+        if (msg.includes('high demand') || msg.includes('spikes in demand')) {
+          continue;
+        }
+        console.warn(`[Gemini Fallback] Lỗi khi gọi '${model}': ${(err as Error).message}`);
+      }
+    }
+
+    throw lastError || new Error('Không thể kết nối đến các mô hình AI của Google lúc này. Vui lòng thử lại sau.');
+  }
+
+  /**
    * Lấy cấu hình AI hiện tại
    */
   async getConfig(): Promise<AiConfigModel> {
@@ -534,21 +595,11 @@ Bắt buộc trả về đúng định dạng JSON Array chứa các object sau,
 `;
 
     try {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: 'application/json', temperature: 0.3 },
-        }),
-      });
-
-      const resData = (await response.json()) as { error?: { message?: string }; candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
-      if (!response.ok) {
-        throw new Error(resData.error?.message || 'Lỗi gọi API Google Gemini');
-      }
-
+      const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: 'application/json', temperature: 0.3 },
+      };
+      const resData = await this.callGeminiWithFallback(modelName, apiKey, payload);
       const text = resData.candidates?.[0]?.content?.parts?.[0]?.text;
       const items = JSON.parse(text || '[]');
 
@@ -635,17 +686,11 @@ ${JSON.stringify(goalsContext, null, 2)}
   "action_payload": { "goal_id": 1, "monthly_contribution": 0 }
 }]`;
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: 'application/json', temperature: 0.3 },
-      }),
-    });
-    const responseData = (await response.json()) as { error?: { message?: string }; candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
-    if (!response.ok) throw new Error(responseData.error?.message || 'Lỗi gọi API Google Gemini');
+    const payload = {
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { responseMimeType: 'application/json', temperature: 0.3 },
+    };
+    const responseData = await this.callGeminiWithFallback(modelName, apiKey, payload);
 
     const items = JSON.parse(responseData.candidates?.[0]?.content?.parts?.[0]?.text || '[]') as Array<{
       type?: string; title?: string; summary?: string; detailed_reasoning?: string;
@@ -771,7 +816,6 @@ Dữ liệu tài chính hiện tại của người dùng:
 
     let aiReply = '';
     try {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
       const payload = {
         systemInstruction: {
           parts: [
@@ -785,18 +829,11 @@ ${ragContext}`,
         contents: historyParts,
       };
 
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = (await res.json()) as { error?: { message?: string }; candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
-      if (!res.ok) throw new Error(data.error?.message || 'Lỗi phản hồi Gemini');
+      const data = await this.callGeminiWithFallback(modelName, apiKey, payload);
       aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Xin lỗi, tôi chưa thể trả lời lúc này.';
     } catch (err: unknown) {
       console.error('Lỗi Gemini Chat:', err);
-      aiReply = `Xin lỗi, có lỗi khi kết nối tới AI: ${(err as Error).message}. Vui lòng kiểm tra lại API Key trong Cài đặt.`;
+      aiReply = `Xin lỗi, có lỗi khi kết nối tới AI: ${(err as Error).message}. Vui lòng thử lại sau giây lát hoặc chọn mô hình khác trong Cài đặt.`;
     }
 
     // 4. Lưu câu trả lời của AI
